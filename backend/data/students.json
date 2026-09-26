@@ -1,0 +1,179 @@
+[
+  {
+    "id": "s1",
+    "userId": "u2",
+    "fullName": "Nguyễn Văn An",
+    "avatar": "",
+    "phone": "0901234567",
+    "email": "student@gmail.com",
+    "dateOfBirth": "2002-05-15",
+    "address": "123 Nguyễn Văn Linh, Đà Nẵng",
+    "university": "Đại học Đà Nẵng",
+    "major": "Công nghệ thông tin",
+    "graduationYear": 2025,
+    "careerObjective": "Tìm kiếm cơ hội làm việc tại công ty công nghệ, phát triển kỹ năng lập trình Frontend và Fullstack.",
+    "desiredPositions": [
+      "Frontend Developer",
+      "Fullstack Developer"
+    ],
+    "desiredLocation": "Đà Nẵng",
+    "desiredSalary": "8000000-15000000",
+    "education": [
+      {
+        "id": "edu1",
+        "school": "Đại học Đà Nẵng",
+        "degree": "Cử nhân",
+        "major": "Công nghệ thông tin",
+        "startYear": 2021,
+        "endYear": 2025,
+        "gpa": 3.2,
+        "description": "Chuyên ngành Kỹ thuật phần mềm"
+      }
+    ],
+    "skills": [
+      "ReactJS",
+      "JavaScript",
+      "NodeJS",
+      "MySQL",
+      "Git",
+      "HTML",
+      "CSS",
+      "Tailwind CSS"
+    ],
+    "experiences": [
+      {
+        "id": "exp1",
+        "company": "FPT Software",
+        "position": "Frontend Intern",
+        "startDate": "2024-06-01",
+        "endDate": "2024-08-31",
+        "isCurrent": false,
+        "description": "Phát triển giao diện web sử dụng ReactJS, làm việc nhóm với Git."
+      }
+    ],
+    "projects": [
+      {
+        "id": "prj1",
+        "name": "Website bán hàng thời trang",
+        "role": "Frontend Developer",
+        "startDate": "2024-03-01",
+        "endDate": "2024-05-01",
+        "description": "Xây dựng website bán hàng thời trang với ReactJS, NodeJS và MySQL.",
+        "technologies": [
+          "ReactJS",
+          "NodeJS",
+          "MySQL",
+          "Tailwind CSS"
+        ],
+        "link": "https://github.com/example/fashion-store"
+      }
+    ],
+    "certificates": [
+      {
+        "id": "cert1",
+        "name": "JavaScript Algorithms and Data Structures",
+        "issuer": "freeCodeCamp",
+        "issueDate": "2024-02-15",
+        "link": ""
+      }
+    ],
+    "languages": [
+      {
+        "id": "lang1",
+        "language": "Tiếng Anh",
+        "level": "Intermediate (TOEIC 550)"
+      }
+    ],
+    "createdAt": "2024-01-02T00:00:00.000Z",
+    "updatedAt": "2024-01-02T00:00:00.000Z"
+  },
+  {
+    "id": "12eea0dc-9f35-43c5-a091-35c13273c89e",
+    "userId": "a41be78d-d442-4313-9fe7-f99ad0a93a75",
+    "fullName": "Huy Hoàng Gia",
+    "avatar": "",
+    "phone": "0359334872",
+    "email": "huy_2351220116@dau.edu.vn",
+    "dateOfBirth": "2005-03-06",
+    "address": "79 trung lương 16",
+    "university": "DAU",
+    "major": "CNTT",
+    "graduationYear": 2022,
+    "careerObjective": "Full stack",
+    "desiredPositions": [],
+    "desiredLocation": "đà nẵng",
+    "desiredSalary": "5000000",
+    "education": [
+      {
+        "id": "edu_1787822818805",
+        "school": "DAU",
+        "degree": "Kỹ Sư",
+        "major": "CNTT",
+        "startYear": 2023,
+        "endYear": 2028,
+        "gpa": 3.4,
+        "description": ""
+      }
+    ],
+    "skills": [
+      "JavaScript",
+      "ReactJS",
+      "TypeScript",
+      "NodeJS",
+      "ExpressJS",
+      "MySQL"
+    ],
+    "experiences": [
+      {
+        "id": "exp_1787853270131",
+        "company": "",
+        "position": "",
+        "startDate": "",
+        "endDate": "",
+        "isCurrent": false,
+        "description": ""
+      }
+    ],
+    "projects": [
+      {
+        "id": "prj_1787853273880",
+        "name": "",
+        "role": "",
+        "startDate": "",
+        "endDate": "",
+        "description": "",
+        "technologies": [],
+        "link": ""
+      }
+    ],
+    "certificates": [],
+    "languages": [],
+    "createdAt": "2026-08-27T09:15:53.893Z",
+    "updatedAt": "2026-08-27T17:54:39.278Z"
+  },
+  {
+    "id": "4983a705-1fc5-4d8f-938d-7baa88710e8d",
+    "userId": "c796d05c-3017-4596-bf44-943de72aaeca",
+    "fullName": "viet",
+    "avatar": "",
+    "phone": "",
+    "email": "viet@gmail.com",
+    "dateOfBirth": "",
+    "address": "",
+    "university": "",
+    "major": "",
+    "graduationYear": null,
+    "careerObjective": "",
+    "desiredPositions": [],
+    "desiredLocation": "",
+    "desiredSalary": "",
+    "education": [],
+    "skills": [],
+    "experiences": [],
+    "projects": [],
+    "certificates": [],
+    "languages": [],
+    "createdAt": "2026-08-27T12:12:42.515Z",
+    "updatedAt": "2026-08-27T12:12:42.515Z"
+  }
+]

@@ -1,0 +1,63 @@
+[
+  {
+    "id": "c1",
+    "name": "FPT Software",
+    "logo": "",
+    "description": "FPT Software là công ty phần mềm hàng đầu Việt Nam, cung cấp dịch vụ CNTT và outsourcing toàn cầu.",
+    "address": "Đà Nẵng",
+    "website": "https://fpt-software.com",
+    "email": "hr@fpt-software.com",
+    "industry": "Technology",
+    "size": "1000-5000",
+    "createdAt": "2024-01-01T00:00:00.000Z"
+  },
+  {
+    "id": "c2",
+    "name": "Axon Active Vietnam",
+    "logo": "",
+    "description": "Axon Active là công ty phần mềm Thụy Sĩ với văn phòng tại Đà Nẵng, chuyên về Agile development.",
+    "address": "Đà Nẵng",
+    "website": "https://axonactive.com",
+    "email": "hr@axonactive.com",
+    "industry": "Technology",
+    "size": "100-500",
+    "createdAt": "2024-01-01T00:00:00.000Z"
+  },
+  {
+    "id": "c3",
+    "name": "NashTech Vietnam",
+    "logo": "",
+    "description": "NashTech là công ty tư vấn CNTT toàn cầu với trụ sở chính tại Anh và văn phòng tại Hà Nội, Hồ Chí Minh.",
+    "address": "Hồ Chí Minh",
+    "website": "https://nashtechglobal.com",
+    "email": "hr@nashtechglobal.com",
+    "industry": "Technology",
+    "size": "500-1000",
+    "createdAt": "2024-01-01T00:00:00.000Z"
+  },
+  {
+    "id": "c4",
+    "name": "KMS Technology",
+    "logo": "",
+    "description": "KMS Technology là công ty tư vấn và phát triển phần mềm Mỹ-Việt, chuyên về QA và phát triển sản phẩm.",
+    "address": "Hồ Chí Minh",
+    "website": "https://kms-technology.com",
+    "email": "hr@kms-technology.com",
+    "industry": "Technology",
+    "size": "500-1000",
+    "createdAt": "2024-01-01T00:00:00.000Z"
+  },
+  {
+    "id": "c5",
+    "name": "Rikkeisoft",
+    "logo": "",
+    "description": "Rikkeisoft là công ty phần mềm Việt Nam chuyên phát triển ứng dụng web, mobile và AI.",
+    "address": "Hà Nội",
+    "website": "https://rikkeisoft.com",
+    "email": "hr@rikkeisoft.com",
+    "industry": "Technology",
+    "size": "100-500",
+    "createdAt": "2024-01-01T00:00:00.000Z",
+    "updatedAt": "2026-08-27T12:10:52.346Z"
+  }
+]

@@ -1,0 +1,26 @@
+[
+  {
+    "id": "bdb53709-293c-4487-b51e-a6f1580298a5",
+    "studentId": "12eea0dc-9f35-43c5-a091-35c13273c89e",
+    "title": "CV - Huy Hoàng Gia - Developer",
+    "template": "minimal",
+    "personalInfo": {
+      "fullName": "Huy Hoàng Gia",
+      "email": "huy_2351220116@dau.edu.vn",
+      "phone": "0359334872",
+      "address": "79 trung lương 16",
+      "title": "Software Engineer"
+    },
+    "careerObjective": "",
+    "summary": "",
+    "education": [],
+    "skills": [],
+    "experiences": [],
+    "projects": [],
+    "certificates": [],
+    "languages": [],
+    "aiGenerated": false,
+    "createdAt": "2026-08-27T09:17:22.804Z",
+    "updatedAt": "2026-08-27T11:53:31.603Z"
+  }
+]

@@ -1,0 +1,30 @@
+[
+  {
+    "id": "u1",
+    "email": "admin@gmail.com",
+    "password": "$2b$10$8jWRvMP32T2nzHR6WEqSS.3oD.Jqn1p5sL9iBHPYnW7PUY.7P2TNG",
+    "role": "admin",
+    "createdAt": "2024-01-01T00:00:00.000Z"
+  },
+  {
+    "id": "u2",
+    "email": "student@gmail.com",
+    "password": "$2b$10$8jWRvMP32T2nzHR6WEqSS.3oD.Jqn1p5sL9iBHPYnW7PUY.7P2TNG",
+    "role": "student",
+    "createdAt": "2024-01-02T00:00:00.000Z"
+  },
+  {
+    "id": "a41be78d-d442-4313-9fe7-f99ad0a93a75",
+    "email": "huy_2351220116@dau.edu.vn",
+    "password": "$2b$10$mCrzb.ib0IcTAWQDfMUo8eb/NDMM9URb5paUtLDYX57AnYu0anM8O",
+    "role": "student",
+    "createdAt": "2026-08-27T09:15:53.890Z"
+  },
+  {
+    "id": "c796d05c-3017-4596-bf44-943de72aaeca",
+    "email": "viet@gmail.com",
+    "password": "$2b$10$QhHl3FuBPKnGNJkyPRlK3eY9ONwP6tDmK.Q7fEuJ2uGiVw.3CFp.i",
+    "role": "student",
+    "createdAt": "2026-08-27T12:12:42.512Z"
+  }
+]
