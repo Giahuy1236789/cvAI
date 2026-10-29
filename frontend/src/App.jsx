@@ -55,12 +55,12 @@ function App() {
               <Route path="/register" element={<RegisterPage />} />
               <Route path="/jobs" element={<JobListPage />} />
               <Route path="/jobs/:id" element={<JobDetailPage />} />
+              <Route path="/cv-templates" element={<CVTemplatesPage />} />
 
-              {/* Student Protected Routes */}
-              <Route element={<ProtectedRoute allowedRoles={['student']} />}>
+              {/* Student & User Protected Routes */}
+              <Route element={<ProtectedRoute allowedRoles={['student', 'admin']} />}>
                 <Route path="/profile" element={<ProfilePage />} />
                 <Route path="/cvs" element={<CVListPage />} />
-                <Route path="/cv-templates" element={<CVTemplatesPage />} />
                 <Route path="/cv-editor" element={<CVEditorPage />} />
                 <Route path="/cv-editor/:id" element={<CVEditorPage />} />
                 <Route path="/cv-analyzer" element={<CVAnalyzerPage />} />
