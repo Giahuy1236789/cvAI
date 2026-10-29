@@ -88,6 +88,11 @@ const LoginPage = ({ initialMode = 'login' }) => {
             <button type="submit" disabled={loading} style={{ marginTop: '15px' }}>
               {loading ? 'Đang xử lý...' : 'Đăng ký'}
             </button>
+
+            <div className="mobile-toggle-auth">
+              <span>Đã có tài khoản?</span>
+              <button type="button" onClick={() => { setIsRightPanelActive(false); setError(''); }}>Đăng nhập ngay</button>
+            </div>
           </form>
         </div>
 
@@ -111,6 +116,11 @@ const LoginPage = ({ initialMode = 'login' }) => {
             <button type="submit" disabled={loading}>
               {loading ? 'Đang xử lý...' : 'Đăng nhập'}
             </button>
+
+            <div className="mobile-toggle-auth">
+              <span>Chưa có tài khoản?</span>
+              <button type="button" onClick={() => { setIsRightPanelActive(true); setError(''); }}>Đăng ký ngay</button>
+            </div>
           </form>
         </div>
 

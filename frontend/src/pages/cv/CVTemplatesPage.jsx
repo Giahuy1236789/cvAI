@@ -238,6 +238,47 @@ const CVCardThumbnail = ({ layout, color, cvData }) => {
   );
 };
 
+// Component xem trước phóng to tự động căn chỉnh tỉ lệ cho điện thoại và máy tính
+const ModalPreviewWrapper = ({ cvData, layout, color }) => {
+  const wrapperRef = useRef(null);
+  const [scale, setScale] = useState(0.8);
+
+  useEffect(() => {
+    if (!wrapperRef.current) return;
+    const updateScale = () => {
+      const availableWidth = wrapperRef.current.offsetWidth - 24;
+      if (availableWidth > 0) {
+        setScale(Math.min(1, Math.max(0.35, availableWidth / 794)));
+      }
+    };
+    updateScale();
+    const ro = new ResizeObserver(updateScale);
+    ro.observe(wrapperRef.current);
+    return () => ro.disconnect();
+  }, []);
+
+  return (
+    <div ref={wrapperRef} className="w-full flex justify-center items-start overflow-hidden">
+      <div 
+        style={{
+          width: '794px',
+          minHeight: '1123px',
+          transform: `scale(${scale})`,
+          transformOrigin: 'top center',
+          marginBottom: scale < 1 ? `calc((1123px * ${scale}) - 1123px)` : 0
+        }}
+        className="shadow-2xl rounded-sm overflow-hidden border border-slate-300/80 bg-white shrink-0 transition-transform duration-200"
+      >
+        <CVPreviewComponent 
+          cvData={cvData} 
+          baseLayout={layout} 
+          colorTheme={color} 
+        />
+      </div>
+    </div>
+  );
+};
+
 const CVTemplatesPage = () => {
   const navigate = useNavigate();
   const fileInputRef = useRef(null);
@@ -458,12 +499,12 @@ const CVTemplatesPage = () => {
           </div>
 
           {/* Category Filter Pills */}
-          <div className="flex flex-wrap justify-center gap-2 pt-4">
+          <div className="flex items-center gap-2 pt-4 w-full overflow-x-auto pb-2 scrollbar-none sm:justify-center px-1">
             {CATEGORIES.map((cat) => (
               <button
                 key={cat}
                 onClick={() => setActiveCategory(cat)}
-                className={`px-5 py-2.5 rounded-full text-xs sm:text-sm font-bold transition-all duration-300 cursor-pointer ${
+                className={`px-4 sm:px-5 py-2 sm:py-2.5 rounded-full text-xs sm:text-sm font-bold transition-all duration-300 cursor-pointer shrink-0 whitespace-nowrap ${
                   activeCategory === cat 
                     ? 'bg-slate-900 text-white shadow-lg shadow-slate-900/20 scale-105' 
                     : 'bg-white text-slate-600 border border-slate-200 hover:border-indigo-300 hover:text-indigo-600 hover:bg-indigo-50/50'
@@ -643,14 +684,12 @@ const CVTemplatesPage = () => {
             </div>
 
             {/* Modal A4 Preview Body */}
-            <div className="flex-1 overflow-y-auto p-4 sm:p-8 bg-slate-100/70 flex justify-center">
-              <div className="shadow-2xl rounded-sm overflow-hidden border border-slate-300/80 bg-white scale-[0.8] sm:scale-100 origin-top">
-                <CVPreviewComponent 
-                  cvData={previewData} 
-                  baseLayout={previewModal.template.layout} 
-                  colorTheme={previewModal.selectedColor} 
-                />
-              </div>
+            <div className="flex-1 overflow-y-auto p-3 sm:p-8 bg-slate-100/70 flex justify-center">
+              <ModalPreviewWrapper 
+                cvData={previewData} 
+                layout={previewModal.template.layout} 
+                color={previewModal.selectedColor} 
+              />
             </div>
           </div>
         </div>
