@@ -535,14 +535,14 @@ const CVTemplatesPage = () => {
 
               {/* Card Meta Content */}
               <div className="pt-4 pb-2 px-2 flex-1 flex flex-col">
-                <div className="flex items-center justify-between mb-1.5">
-                  <h3 className="text-base font-extrabold text-slate-900 group-hover:text-indigo-600 transition-colors line-clamp-1">
-                    {tmpl.name}
-                  </h3>
-                  <span className="text-2xs font-extrabold px-2 py-0.5 rounded-md bg-slate-100 text-slate-600 uppercase tracking-wider shrink-0 ml-2">
+                <div className="flex items-center gap-2 mb-1.5">
+                  <span className="text-2xs font-extrabold px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-700 uppercase tracking-wider">
                     {tmpl.category}
                   </span>
                 </div>
+                <h3 className="text-base font-extrabold text-slate-900 group-hover:text-indigo-600 transition-colors line-clamp-1 mb-1">
+                  {tmpl.name}
+                </h3>
                 <p className="text-xs text-slate-500 line-clamp-2 leading-relaxed mb-3">
                   {tmpl.desc}
                 </p>
