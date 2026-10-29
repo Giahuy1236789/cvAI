@@ -73,7 +73,7 @@ const CVEditorPage = () => {
         // Create new CV - load student profile to auto-populate
         const profRes = await api.get('/students/profile');
         const urlParams = new URLSearchParams(window.location.search);
-        const initialTemplate = urlParams.get('template') || 'topcv';
+        const initialTemplate = urlParams.get('template') || 'topcv-blue';
         
         if (profRes.data.success) {
           const student = profRes.data.data.student;
@@ -731,13 +731,72 @@ const CVEditorPage = () => {
         </div>
 
         {/* Right Column: Live CV Preview Paper */}
-        <div className="bg-slate-200/60 p-4 sm:p-6 rounded-3xl border border-slate-300/60 flex justify-center overflow-x-auto">
-          <CVPreviewComponent 
-            cvData={cvData} 
-            baseLayout={baseLayout} 
-            colorTheme={colorTheme} 
-            innerRef={cvPreviewRef} 
-          />
+        <div className="flex flex-col gap-3 min-w-0">
+          {/* Quick Layout & Color Switcher Bar 2026 */}
+          <div className="bg-white p-3 rounded-2xl border border-slate-200 shadow-xs flex flex-wrap items-center justify-between gap-3">
+            <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-xl">
+              <button
+                type="button"
+                onClick={() => setCvData({ ...cvData, template: `topcv-${colorTheme}` })}
+                className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-all cursor-pointer ${baseLayout === 'topcv' ? 'bg-white text-indigo-600 shadow-xs' : 'text-slate-600 hover:text-slate-900'}`}
+              >
+                TopCV Pro 2026
+              </button>
+              <button
+                type="button"
+                onClick={() => setCvData({ ...cvData, template: `modern-${colorTheme}` })}
+                className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-all cursor-pointer ${baseLayout === 'modern' ? 'bg-white text-indigo-600 shadow-xs' : 'text-slate-600 hover:text-slate-900'}`}
+              >
+                Modern Tech
+              </button>
+              <button
+                type="button"
+                onClick={() => setCvData({ ...cvData, template: `classic-${colorTheme}` })}
+                className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-all cursor-pointer ${baseLayout === 'classic' ? 'bg-white text-indigo-600 shadow-xs' : 'text-slate-600 hover:text-slate-900'}`}
+              >
+                Harvard ATS
+              </button>
+              <button
+                type="button"
+                onClick={() => setCvData({ ...cvData, template: `minimal-${colorTheme}` })}
+                className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-all cursor-pointer ${baseLayout === 'minimal' ? 'bg-white text-indigo-600 shadow-xs' : 'text-slate-600 hover:text-slate-900'}`}
+              >
+                Tối Giản 2026
+              </button>
+            </div>
+
+            {/* Color Palette Selector */}
+            <div className="flex items-center gap-1.5">
+              {[
+                { id: 'blue', hex: '#2563eb', label: 'Navy' },
+                { id: 'emerald', hex: '#059669', label: 'Emerald' },
+                { id: 'purple', hex: '#7c3aed', label: 'Purple' },
+                { id: 'indigo', hex: '#4f46e5', label: 'Indigo' },
+                { id: 'rose', hex: '#e11d48', label: 'Rose' },
+                { id: 'teal', hex: '#0d9488', label: 'Teal' },
+                { id: 'slate', hex: '#334155', label: 'Slate' },
+                { id: 'amber', hex: '#d97706', label: 'Amber' },
+              ].map(c => (
+                <button
+                  key={c.id}
+                  type="button"
+                  title={c.label}
+                  onClick={() => setCvData({ ...cvData, template: `${baseLayout}-${c.id}` })}
+                  className={`w-5 h-5 rounded-full border-2 transition-transform cursor-pointer ${colorTheme === c.id ? 'scale-125 ring-2 ring-indigo-500 ring-offset-2 border-white' : 'border-white opacity-70 hover:opacity-100 hover:scale-110'}`}
+                  style={{ backgroundColor: c.hex }}
+                />
+              ))}
+            </div>
+          </div>
+
+          <div className="bg-slate-200/60 p-4 sm:p-6 rounded-3xl border border-slate-300/60 flex justify-center overflow-x-auto">
+            <CVPreviewComponent 
+              cvData={cvData} 
+              baseLayout={baseLayout} 
+              colorTheme={colorTheme} 
+              innerRef={cvPreviewRef} 
+            />
+          </div>
         </div>
       </div>
     </div>
