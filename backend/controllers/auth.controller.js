@@ -156,7 +156,15 @@ const login = async (req, res) => {
     }
 
     // Kiểm tra password
-    const isMatch = await bcrypt.compare(password, user.password);
+    let isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      const { pool } = require('../config/database');
+      const [rows] = await pool.query('SELECT * FROM users WHERE email = ?', [email.toLowerCase()]);
+      if (rows.length > 0 && (await bcrypt.compare(password, rows[0].password))) {
+        user.password = rows[0].password;
+        isMatch = true;
+      }
+    }
     if (!isMatch) {
       return res.status(401).json({
         success: false,

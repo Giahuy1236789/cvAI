@@ -2,7 +2,7 @@
   {
     "id": "u1",
     "email": "admin@gmail.com",
-    "password": "$2b$10$8jWRvMP32T2nzHR6WEqSS.3oD.Jqn1p5sL9iBHPYnW7PUY.7P2TNG",
+    "password": "$2b$10$rxZG3wV/JiF83LIzG5yfGuB45A9DK8s8ApLiQo2hgcSZ7CGRDFffi",
     "role": "admin",
     "createdAt": "2024-01-01T00:00:00.000Z"
   },
