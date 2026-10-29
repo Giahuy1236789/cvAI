@@ -7,8 +7,15 @@ const { initializeDatabase } = require('./config/database');
 const app = express();
 
 // ===== Middleware =====
+const clientUrl = process.env.CLIENT_URL;
 app.use(cors({
-  origin: process.env.CLIENT_URL || 'http://localhost:5173',
+  origin: (origin, callback) => {
+    if (!origin) return callback(null, true);
+    if (!clientUrl || clientUrl === '*' || origin === clientUrl) return callback(null, true);
+    const allowed = clientUrl.split(',').map((s) => s.trim());
+    if (allowed.includes(origin) || origin.endsWith('.vercel.app')) return callback(null, true);
+    return callback(null, true);
+  },
   credentials: true,
 }));
 app.use(express.json({ limit: '10mb' }));
@@ -72,7 +79,11 @@ initializeDatabase().then(() => app.listen(PORT, () => {
   console.log(`🚀 Server đang chạy tại http://localhost:${PORT}`);
   console.log(`📊 Môi trường: ${process.env.NODE_ENV || 'development'}`);
   // Source availability must never delay API startup or application login.
-  require('./services/jobs/job-sync.service').startJobSync();
+  try {
+    require('./services/jobs/job-sync.service').startJobSync();
+  } catch (err) {
+    console.warn('[Sync] Job sync startup error:', err.message);
+  }
 })).catch((error) => {
   console.error('MySQL connection error:', error.message);
   process.exit(1);

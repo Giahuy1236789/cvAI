@@ -1,4 +1,5 @@
 export const isJobicyJob = (job) => String(job?.source || '').trim().toLowerCase() === 'jobicy';
+export const isMockVnJob = (job) => String(job?.source || '').trim().toLowerCase() === 'mockvn';
 
 // Only open the original listing on Jobicy, never an arbitrary URL from a feed.
 export const getJobicySourceUrl = (job) => {
@@ -16,6 +17,19 @@ export const getJobicySourceUrl = (job) => {
   }
 };
 
+export const getSourceUrl = (job) => {
+  if (isJobicyJob(job)) return getJobicySourceUrl(job);
+  if (isMockVnJob(job)) {
+    try {
+      const url = new URL(job.sourceUrl);
+      if (url.protocol === 'http:' || url.protocol === 'https:') return url.href;
+    } catch {
+      return '';
+    }
+  }
+  return job?.sourceUrl || '';
+};
+
 const salaryPeriods = {
   year: 'năm', yearly: 'năm', annual: 'năm', annually: 'năm',
   month: 'tháng', monthly: 'tháng',
@@ -25,7 +39,7 @@ const salaryPeriods = {
 };
 
 export const formatSalary = (job) => {
-  const imported = isJobicyJob(job);
+  const imported = isJobicyJob(job) || isMockVnJob(job);
   const currency = String(job.salaryCurrency || (imported ? '' : 'VND')).trim().toUpperCase();
   const period = salaryPeriods[String(job.salaryPeriod || (imported ? '' : 'month')).trim().toLowerCase()];
   const min = Number(job.salaryMin);

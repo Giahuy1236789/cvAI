@@ -1,6 +1,7 @@
 const { readJSON, findById, findOneBy, insert, updateById, deleteById, getJobSyncState } = require('../config/database');
 const { v4: uuidv4 } = require('uuid');
 const { importJobicyJobs } = require('../services/jobs/jobicy-import.service');
+const { importMockVnJobs } = require('../services/jobs/vn-mock-import.service');
 const { isPublicJob } = require('../services/jobs/job-visibility');
 
 /**
@@ -62,8 +63,33 @@ const getJobs = (req, res) => {
       );
     }
 
-    // Sắp xếp mới nhất lên đầu
-    jobs.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    // Lọc theo CV (Nếu có truyền cvId)
+    const { cvId } = req.query;
+    if (cvId && req.user) {
+      const students = readJSON('students');
+      const student = students.find((s) => s.userId === req.user.id);
+      
+      const cvs = readJSON('cvs');
+      const cv = student ? cvs.find(c => c.id === cvId && c.studentId === student.id) : null;
+      
+      if (cv) {
+        const { calculateMatchScore } = require('../services/recommendation/matching.service');
+        const studentProfile = {
+          skills: (cv.skills || []).map(s => s.name || s),
+          experiences: cv.experiences || [],
+          careerObjective: cv.careerObjective || ''
+        };
+        jobs = jobs.map(job => ({
+          ...job,
+          _matchScore: calculateMatchScore(studentProfile, job).finalScore
+        })).sort((a, b) => b._matchScore - a._matchScore);
+      } else {
+        jobs.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+      }
+    } else {
+      // Sắp xếp mới nhất lên đầu mặc định
+      jobs.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    }
 
     res.json({
       success: true,
@@ -269,11 +295,18 @@ const deleteJob = (req, res) => {
  */
 const importPublicJobs = async (req, res) => {
   try {
-    const result = await importJobicyJobs({ count: req.body?.count });
+    const [resultJobicy, resultVn] = await Promise.all([
+      importJobicyJobs({ count: req.body?.count }),
+      importMockVnJobs()
+    ]);
+    
+    const totalInserted = resultJobicy.inserted + resultVn.inserted;
+    const totalUpdated = resultJobicy.updated + resultVn.updated;
+
     res.json({
       success: true,
-      message: `Đã đồng bộ ${result.inserted} tin mới và cập nhật ${result.updated} tin từ Jobicy.`,
-      data: result,
+      message: `Đã đồng bộ ${totalInserted} tin mới và cập nhật ${totalUpdated} tin từ Jobicy và Top công ty VN.`,
+      data: { jobicy: resultJobicy, vnMock: resultVn },
     });
   } catch (error) {
     console.error('Import public jobs error:', error.message);

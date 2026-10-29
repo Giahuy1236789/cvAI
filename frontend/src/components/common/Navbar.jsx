@@ -22,8 +22,8 @@ const Navbar = () => {
 
   const links = isStudent ? [
     ['/jobs', Briefcase, 'Tìm việc làm'], ['/recommendations', Sparkles, 'Gợi ý việc làm AI'],
-    ['/cvs', FileText, 'CV của tôi'], ['/cv-analyzer', Sparkles, 'Phân tích CV AI'],
-    ['/saved-jobs', Bookmark, 'Đã lưu'], ['/profile', User, 'Tạo CV ngay'],
+    ['/cv-analyzer', Sparkles, 'Phân tích CV AI'], ['/saved-jobs', Bookmark, 'Đã lưu'],
+    ['/cvs', FileText, 'Tạo CV'],
   ] : isAdmin ? [
     ['/admin/dashboard', LayoutDashboard, 'Tổng quan'], ['/admin/jobs', Briefcase, 'Việc làm'],
     ['/admin/companies', Building2, 'Công ty'], ['/admin/users', Users, 'Tài khoản'],

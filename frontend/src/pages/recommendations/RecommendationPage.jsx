@@ -6,6 +6,7 @@ import {
   XCircle, ArrowRight, AlertCircle, User, Briefcase, RefreshCw
 } from 'lucide-react';
 import '../workspace-pages.css';
+import api from '../../services/api';
 
 const RecommendationPage = () => {
   const [recommendations, setRecommendations] = useState([]);
@@ -18,13 +19,30 @@ const RecommendationPage = () => {
   const [aiError, setAiError] = useState('');
   const [minScore, setMinScore] = useState(0);
   const lifecycleRef = useRef(null);
+  const [cvs, setCvs] = useState([]);
+  const [selectedCvId, setSelectedCvId] = useState('');
+  const [locationFilter, setLocationFilter] = useState('all');
+
+  const isJobInVietnam = (job) => {
+    if (job?.isVN !== undefined) return Boolean(job.isVN);
+    const loc = (job?.location || '').toLowerCase();
+    return ['hà nội', 'hồ chí minh', 'hcm', 'đà nẵng', 'cần thơ', 'hải phòng', 'bình dương', 'đồng nai', 'huế', 'việt nam', 'vietnam', 'toàn quốc'].some((k) => loc.includes(k));
+  };
 
   useEffect(() => {
     const lifecycle = { active: true, fetching: false, analyzing: false };
     lifecycleRef.current = lifecycle;
     fetchRecommendations(lifecycle);
+    
+    // Fetch CVs
+    api.get('/cvs').then(res => {
+      if (lifecycle.active && res.data.success) {
+        setCvs(res.data.data.cvs || []);
+      }
+    }).catch(err => console.error('Error fetching CVs:', err));
+    
     return () => { lifecycle.active = false; };
-  }, []);
+  }, [selectedCvId]);
 
   function applyRecommendations(data) {
     setRecommendations(data.recommendations);
@@ -43,7 +61,7 @@ const RecommendationPage = () => {
       setLoading(true);
       setError('');
       setAiError('');
-      const res = await getRecommendations({ fast: true });
+      const res = await getRecommendations({ fast: true, cvId: selectedCvId });
       if (!lifecycle.active) return;
       if (!res.data.success) throw new Error(res.data.message || 'Không thể tải gợi ý việc làm lúc này.');
       applyRecommendations(res.data.data);
@@ -67,7 +85,7 @@ const RecommendationPage = () => {
     setAiLoading(true);
     setAiError('');
     try {
-      const res = await getRecommendations();
+      const res = await getRecommendations({ cvId: selectedCvId });
       if (!lifecycle.active) return;
       if (!res.data.success) throw new Error(res.data.message || 'AI chưa thể hoàn tất phân tích. Bạn có thể thử lại.');
       applyRecommendations(res.data.data);
@@ -84,7 +102,11 @@ const RecommendationPage = () => {
     }
   }
 
-  const filtered = recommendations.filter((item) => item.finalScore >= minScore);
+  const filtered = recommendations.filter((item) => {
+    const matchScore = item.finalScore >= minScore;
+    const matchLoc = locationFilter === 'all' || (locationFilter === 'vn' && (item.isVN || isJobInVietnam(item.job)));
+    return matchScore && matchLoc;
+  });
   const strongMatches = recommendations.filter((item) => item.finalScore >= 70).length;
   const aiResultCount = recommendations.filter((item) => item.aiRecommendation === true).length;
   const formatSalary = (job) => {
@@ -115,14 +137,39 @@ const RecommendationPage = () => {
         </a>
       )}
 
+      {cvs.length > 0 && (
+        <div style={{ marginBottom: '24px', padding: '16px', backgroundColor: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '12px' }}>
+          <label htmlFor="cv-selector-rec" style={{ fontWeight: 600, color: '#334155', display: 'flex', alignItems: 'center', gap: '6px' }}>
+            CV cần phân tích
+          </label>
+          <select 
+            id="cv-selector-rec" 
+            value={selectedCvId} 
+            onChange={(e) => setSelectedCvId(e.target.value)}
+            style={{ width: '100%', maxWidth: '500px', padding: '10px 14px', borderRadius: '8px', border: '1px solid #cbd5e1', marginTop: '10px', fontSize: '14px', backgroundColor: '#fff' }}
+          >
+            <option value="">-- Mặc định (Hồ sơ gốc) --</option>
+            {cvs.map(cv => (
+              <option key={cv.id} value={cv.id}>{cv.title}</option>
+            ))}
+          </select>
+        </div>
+      )}
+
       <div className="workspace-split">
         <div className="min-w-0">
           <div className="match-toolbar">
             <h2 className="text-sm font-semibold text-slate-700">{loading ? 'Đang tìm cơ hội...' : `${filtered.length} việc làm phù hợp`}</h2>
-            <div className="match-filters" role="group" aria-label="Điểm phù hợp tối thiểu">
-              {[{ label: 'Tất cả', value: 0 }, { label: 'Từ 50%', value: 50 }, { label: 'Từ 70%', value: 70 }].map((filter) => (
-                <button key={filter.value} type="button" onClick={() => setMinScore(filter.value)} aria-pressed={minScore === filter.value}>{filter.label}</button>
-              ))}
+            <div className="flex flex-wrap items-center gap-2">
+              <div className="match-filters" role="group" aria-label="Bộ lọc khu vực">
+                <button type="button" onClick={() => setLocationFilter('all')} aria-pressed={locationFilter === 'all'}>Tất cả ({recommendations.length})</button>
+                <button type="button" onClick={() => setLocationFilter('vn')} aria-pressed={locationFilter === 'vn'}>🇻🇳 Việt Nam</button>
+              </div>
+              <div className="match-filters" role="group" aria-label="Điểm phù hợp tối thiểu">
+                {[{ label: 'Mọi điểm', value: 0 }, { label: 'Từ 50%', value: 50 }, { label: 'Từ 70%', value: 70 }].map((filter) => (
+                  <button key={filter.value} type="button" onClick={() => setMinScore(filter.value)} aria-pressed={minScore === filter.value}>{filter.label}</button>
+                ))}
+              </div>
             </div>
           </div>
 
@@ -165,7 +212,15 @@ const RecommendationPage = () => {
                     </div>
                   </div>
                   <div className="match-meta">
-                    <span><MapPin className="w-3.5 h-3.5" />{item.job.location || 'Chưa cập nhật'}</span>
+                    <span className="inline-flex items-center gap-1">
+                      <MapPin className="w-3.5 h-3.5" />
+                      {item.job.location || 'Chưa cập nhật'}
+                      {(item.isVN || isJobInVietnam(item.job)) && (
+                        <span className="ml-1.5 inline-flex items-center rounded-full bg-emerald-50 px-2 py-0.5 text-[11px] font-medium text-emerald-700 border border-emerald-200">
+                          Việt Nam
+                        </span>
+                      )}
+                    </span>
                     <span className="text-teal-700 font-medium"><DollarSign className="w-3.5 h-3.5" />{formatSalary(item.job)}</span>
                     {item.job.experience && <span><Briefcase className="w-3.5 h-3.5" />{item.job.experience}</span>}
                   </div>
@@ -203,7 +258,10 @@ const RecommendationPage = () => {
           <section id="recommendation-ai-panel" className="workspace-panel">
             <h2 className="flex items-center gap-2"><Sparkles className="w-4 h-4 text-teal-700" />Phân tích AI</h2>
             {loading ? <p>Đang đối chiếu hồ sơ của bạn với các cơ hội việc làm.</p> : error ? (
-              <p>Phân tích AI sẽ bắt đầu khi tải được danh sách việc làm.</p>
+              <div className="rounded-xl border border-rose-200 bg-rose-50 p-3 text-sm text-rose-900">
+                <p className="font-medium">{error}</p>
+                <button type="button" onClick={() => fetchRecommendations()} className="workspace-secondary mt-2 text-xs">Thử lại</button>
+              </div>
             ) : recommendations.length === 0 ? (
               <p>Chưa có việc làm để AI phân tích. Hãy bổ sung hồ sơ hoặc quay lại khi có cơ hội mới.</p>
             ) : aiLoading ? (

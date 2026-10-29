@@ -4,7 +4,7 @@ import { MapPin, Briefcase, Calendar, Bookmark, Send, Sparkles, CheckCircle2, Ar
 import api from '../../services/api';
 import { getRecommendations } from '../../services/recommendations';
 import { useAuth } from '../../context/AuthContext';
-import { formatSalary, formatDeadline, formatSyncedAt, getJobicySourceUrl, isJobicyJob } from './jobPresentation';
+import { formatSalary, formatDeadline, formatSyncedAt, getSourceUrl, isJobicyJob, isMockVnJob } from './jobPresentation';
 import './jobs.css';
 
 const scoreParts = [
@@ -26,8 +26,8 @@ const JobDetailPage = () => {
   const [isSaved, setIsSaved] = useState(false);
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState('');
-  const imported = isJobicyJob(job);
-  const sourceUrl = getJobicySourceUrl(job);
+  const imported = job?.source && String(job.source).toLowerCase() !== 'internal';
+  const sourceUrl = getSourceUrl(job);
 
   useEffect(() => {
     let cancelled = false;
@@ -121,9 +121,20 @@ const JobDetailPage = () => {
             <p>Mức lương</p><h2 className="job-salary">{formatSalary(job)}</h2>
             <p className="job-deadline"><Calendar size={15} />Hạn nộp: {imported && !job.deadline ? 'Xem tại nguồn' : formatDeadline(job.deadline)}</p>
             {saveError && <p className="jobs-inline-error" role="alert">{saveError}</p>}
-            {sourceUrl ? <a href={sourceUrl} target="_blank" rel="noopener noreferrer" className="jobs-button jobs-button-primary">Ứng tuyển tại trang gốc <ExternalLink size={16} /></a> : <p className="jobs-inline-error">Liên kết tin gốc chưa khả dụng.</p>}
-            <p className="job-apply-note">Bạn sẽ chuyển sang trang gốc để xem hướng dẫn và gửi hồ sơ.</p>
-            {isStudent && <button type="button" onClick={handleToggleSave} disabled={saving} aria-pressed={isSaved} className="jobs-button jobs-button-secondary"><Bookmark size={16} fill={isSaved ? 'currentColor' : 'none'} />{isSaved ? 'Đã lưu việc làm' : 'Lưu việc làm'}</button>}
+            {isMockVnJob(job) ? (
+              <div className="jobs-mock-alert mt-4 p-3 bg-blue-50 text-blue-800 rounded-lg text-sm border border-blue-200">
+                <p>Đây là tin tuyển dụng mẫu (Mock Data) dành cho mục đích demo.</p>
+                <p className="mt-1 font-medium">Chức năng nộp hồ sơ đang được phát triển.</p>
+              </div>
+            ) : sourceUrl ? (
+              <>
+                <a href={sourceUrl} target="_blank" rel="noopener noreferrer" className="jobs-button jobs-button-primary">Ứng tuyển tại trang gốc <ExternalLink size={16} /></a>
+                <p className="job-apply-note">Bạn sẽ chuyển sang trang gốc để xem hướng dẫn và gửi hồ sơ.</p>
+              </>
+            ) : (
+              <p className="jobs-inline-error">Liên kết tin gốc chưa khả dụng.</p>
+            )}
+            {isStudent && <button type="button" onClick={handleToggleSave} disabled={saving} aria-pressed={isSaved} className="jobs-button jobs-button-secondary mt-3"><Bookmark size={16} fill={isSaved ? 'currentColor' : 'none'} />{isSaved ? 'Đã lưu việc làm' : 'Lưu việc làm'}</button>}
           </section>
           <section className="job-company-card"><h2>Về công ty</h2><div className="job-company-name"><div className="jobs-company-avatar" aria-hidden="true">{companyInitials}</div><div><h3>{companyName}</h3>{job.company?.industry && <p>{job.company.industry}</p>}</div></div>{job.company?.description && <p className="job-company-description">{job.company.description}</p>}<dl><div><dt>Quy mô</dt><dd>{job.company?.size || 'Chưa cập nhật'}</dd></div><div><dt>Trụ sở</dt><dd>{job.company?.address || 'Chưa cập nhật'}</dd></div>{job.company?.website && <div><dt>Website</dt><dd><a href={job.company.website} target="_blank" rel="noopener noreferrer">{job.company.website}</a></dd></div>}</dl></section>
         </aside>

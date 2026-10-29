@@ -186,4 +186,86 @@ const getAllCVs = (req, res) => {
   }
 };
 
-module.exports = { getMyCVs, getCVById, createCV, updateCV, deleteCV, getAllCVs };
+/**
+ * @desc    Tải lên và trích xuất nội dung CV (PDF, Word, TXT...)
+ * @route   POST /api/cvs/upload-and-parse
+ * @access  Private (Student)
+ */
+const uploadAndParseCV = async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ success: false, message: 'Vui lòng chọn file CV để tải lên.' });
+    }
+
+    const students = readJSON('students');
+    const student = students.find((s) => s.userId === req.user.id);
+    if (!student) {
+      return res.status(404).json({ success: false, message: 'Không tìm thấy hồ sơ sinh viên.' });
+    }
+
+    const { parseCVFile } = require('../services/cv/cv-parser.service');
+    const parsedData = await parseCVFile(req.file);
+
+    // Nếu người dùng chọn lưu trực tiếp thành một bản CV trong DB
+    if (req.body.saveToDb === 'true' || req.query.save === 'true') {
+      const template = req.body.template || 'topcv';
+      const newCV = {
+        id: uuidv4(),
+        studentId: student.id,
+        title: parsedData.title || `CV - ${parsedData.personalInfo?.fullName || student.fullName}`,
+        template,
+        personalInfo: {
+          fullName: parsedData.personalInfo?.fullName || student.fullName,
+          email: parsedData.personalInfo?.email || student.email,
+          phone: parsedData.personalInfo?.phone || student.phone,
+          address: parsedData.personalInfo?.address || student.address,
+          title: parsedData.personalInfo?.title || 'Chuyên viên',
+          avatar: student.avatar || '',
+          dob: parsedData.personalInfo?.dob || student.dateOfBirth || '',
+          website: parsedData.personalInfo?.website || '',
+        },
+        careerObjective: parsedData.careerObjective || student.careerObjective || '',
+        summary: '',
+        education: parsedData.education?.length ? parsedData.education : (student.education || []),
+        skills: parsedData.skills?.length ? parsedData.skills : (student.skills || []),
+        experiences: parsedData.experiences?.length ? parsedData.experiences : (student.experiences || []),
+        projects: parsedData.projects?.length ? parsedData.projects : (student.projects || []),
+        certificates: parsedData.certificates?.length ? parsedData.certificates : (student.certificates || []),
+        languages: parsedData.languages?.length ? parsedData.languages : (student.languages || []),
+        hobbies: parsedData.hobbies || [],
+        aiGenerated: Boolean(parsedData.usedAI),
+        uploadedFileName: req.file.originalname,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
+
+      insert('cvs', newCV);
+
+      return res.status(201).json({
+        success: true,
+        message: 'Tải lên và tạo CV thành công!',
+        data: {
+          cv: newCV,
+          parsed: parsedData,
+          usedAI: parsedData.usedAI,
+        },
+      });
+    }
+
+    // Hoặc chỉ trích xuất dữ liệu để điền thẳng vào form CV Editor
+    res.json({
+      success: true,
+      message: 'Trích xuất dữ liệu CV thành công!',
+      data: {
+        parsed: parsedData,
+        fileName: req.file.originalname,
+        usedAI: parsedData.usedAI,
+      },
+    });
+  } catch (error) {
+    console.error('UploadAndParseCV error:', error);
+    res.status(500).json({ success: false, message: error.message || 'Lỗi khi tải lên và phân tích CV.' });
+  }
+};
+
+module.exports = { getMyCVs, getCVById, createCV, updateCV, deleteCV, getAllCVs, uploadAndParseCV };

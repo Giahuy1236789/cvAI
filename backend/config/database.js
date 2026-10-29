@@ -22,6 +22,7 @@ const pool = mysql.createPool({
   host: process.env.DB_HOST || '127.0.0.1', port: Number(process.env.DB_PORT || 3306),
   user: process.env.DB_USER || 'root', password: process.env.DB_PASSWORD || '',
   database: process.env.DB_NAME || 'ai_cv_job_db', waitForConnections: true, connectionLimit: 10,
+  ssl: process.env.DB_SSL === 'true' || process.env.DB_SSL === '1' ? { rejectUnauthorized: false } : undefined,
 });
 let cache = {};
 let writeQueue = Promise.resolve();

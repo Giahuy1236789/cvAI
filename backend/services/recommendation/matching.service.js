@@ -2,8 +2,8 @@
  * Recommendation Service - Tính toán mức độ phù hợp giữa sinh viên và việc làm
  *
  * Công thức:
- * Final Score = Skill Match × 60% + Experience Match × 15%
- *             + Location Match × 10% + Salary Match × 10% + Career Interest × 5%
+ * Final Score = Skill Match × 50% + Location Match × 20% + Experience Match × 15%
+ *             + Career Interest × 10% + Salary Match × 5% (+ VN Priority Bonus)
  */
 
 /**
@@ -12,11 +12,39 @@
 const normalize = (str) => (str || '').toLowerCase().trim();
 
 /**
+ * Danh sách từ khóa nhận diện các địa điểm tại Việt Nam
+ */
+const VN_LOCATION_KEYWORDS = [
+  'hà nội', 'ha noi', 'hanoi',
+  'hồ chí minh', 'ho chi minh', 'hcm', 'tp.hcm', 'tp. hồ chí minh', 'sài gòn', 'saigon',
+  'đà nẵng', 'da nang',
+  'cần thơ', 'can tho',
+  'hải phòng', 'hai phong',
+  'bình dương', 'binh duong',
+  'đồng nai', 'dong nai',
+  'huế', 'hue',
+  'quảng nam', 'quang nam',
+  'bà rịa', 'vũng tàu',
+  'nha trang', 'khánh hòa',
+  'việt nam', 'vietnam', 'vn',
+  'toàn quốc',
+];
+
+/**
+ * Kiểm tra xem công việc hoặc địa điểm có ở Việt Nam hay không
+ */
+const isVietnamLocation = (location) => {
+  if (!location) return false;
+  const loc = normalize(location);
+  return VN_LOCATION_KEYWORDS.some((kw) => loc.includes(kw));
+};
+
+/**
  * Tính Skill Match Score (0-100)
  * Dựa trên % kỹ năng của sinh viên match với kỹ năng yêu cầu
  */
 const calcSkillMatch = (studentSkills, jobSkills) => {
-  if (!jobSkills || jobSkills.length === 0) return 100;
+  if (!jobSkills || jobSkills.length === 0) return 40;
   if (!studentSkills || studentSkills.length === 0) return 0;
 
   const studentSkillsNorm = studentSkills.map(normalize);
@@ -71,21 +99,34 @@ const calcExperienceMatch = (studentExperiences, jobExperience) => {
 };
 
 /**
- * Tính Location Match Score (0-100)
+ * Tính Location Match Score (0-100) - Ưu tiên Việt Nam
  */
 const calcLocationMatch = (studentLocation, jobLocation) => {
-  if (!studentLocation || !jobLocation) return 50;
+  if (!jobLocation) return 40;
 
   const sl = normalize(studentLocation);
   const jl = normalize(jobLocation);
 
-  if (sl === jl) return 100;
-  if (sl.includes(jl) || jl.includes(sl)) return 100;
+  // Khớp chính xác hoặc chứa tên địa điểm mong muốn (ví dụ: "Đà Nẵng", "Hà Nội")
+  if (sl && (sl === jl || sl.includes(jl) || jl.includes(sl))) return 100;
 
-  // Remote work
-  if (jl.includes('remote') || jl.includes('toàn quốc')) return 80;
+  const jobIsVN = isVietnamLocation(jobLocation);
+  const studentIsVN = !sl || isVietnamLocation(studentLocation);
 
-  return 0;
+  if (studentIsVN) {
+    // Cùng ở Việt Nam (khác tỉnh/thành)
+    if (jobIsVN) return 90;
+    // Công việc Remote / Toàn quốc / Linh hoạt
+    if (jl.includes('remote') || jl.includes('toàn quốc') || jl.includes('anywhere') || jl.includes('worldwide')) {
+      return 75;
+    }
+    // Công việc cố định tại nước ngoài (Ba Lan, Mỹ, Anh...)
+    return 10;
+  }
+
+  // Nếu ứng viên chọn đích danh nước ngoài
+  if (jl.includes('remote') || jl.includes('anywhere') || jl.includes('worldwide')) return 75;
+  return 20;
 };
 
 /**
@@ -154,13 +195,16 @@ const calculateMatchScore = (student, job) => {
   const salScore = calcSalaryMatch(student.desiredSalary, job.salaryMin, job.salaryMax);
   const interestScore = calcCareerInterest(student.desiredPositions, job.title);
 
-  const finalScore = Math.round(
-    skillScore * 0.60 +
+  const isVN = isVietnamLocation(job.location);
+
+  const finalScore = Math.min(100, Math.round(
+    skillScore * 0.50 +
+    locScore * 0.20 +
     expScore * 0.15 +
-    locScore * 0.10 +
-    salScore * 0.10 +
-    interestScore * 0.05
-  );
+    interestScore * 0.10 +
+    salScore * 0.05 +
+    (isVN ? 5 : 0)
+  ));
 
   // Tính matched/missing skills
   const studentSkillsNorm = (student.skills || []).map(normalize);
@@ -177,6 +221,7 @@ const calculateMatchScore = (student, job) => {
   // Lý do đề xuất
   const reasons = [];
   if (matchedSkills.length > 0) reasons.push(`Có ${matchedSkills.length}/${job.skills?.length || 0} kỹ năng phù hợp`);
+  if (isVN) reasons.push('Việc làm tại Việt Nam');
   if (locScore === 100) reasons.push('Địa điểm làm việc phù hợp');
   if (interestScore === 100) reasons.push('Đúng vị trí công việc mong muốn');
   if (salScore >= 80) reasons.push('Mức lương phù hợp với kỳ vọng');
@@ -193,9 +238,10 @@ const calculateMatchScore = (student, job) => {
     matchedSkills,
     missingSkills,
     reasons,
-    locationMatch: locScore === 100,
+    locationMatch: locScore >= 85,
     salaryMatch: salScore >= 70,
+    isVN,
   };
 };
 
-module.exports = { calculateMatchScore };
+module.exports = { calculateMatchScore, isVietnamLocation, VN_LOCATION_KEYWORDS };

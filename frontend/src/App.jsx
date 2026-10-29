@@ -15,6 +15,7 @@ import JobDetailPage from './pages/jobs/JobDetailPage';
 // Student Pages
 import ProfilePage from './pages/student/ProfilePage';
 import CVListPage from './pages/cv/CVListPage';
+import CVTemplatesPage from './pages/cv/CVTemplatesPage';
 import CVEditorPage from './pages/cv/CVEditorPage';
 import CVAnalyzerPage from './pages/cv/CVAnalyzerPage';
 import RecommendationPage from './pages/recommendations/RecommendationPage';
@@ -59,6 +60,7 @@ function App() {
               <Route element={<ProtectedRoute allowedRoles={['student']} />}>
                 <Route path="/profile" element={<ProfilePage />} />
                 <Route path="/cvs" element={<CVListPage />} />
+                <Route path="/cv-templates" element={<CVTemplatesPage />} />
                 <Route path="/cv-editor" element={<CVEditorPage />} />
                 <Route path="/cv-editor/:id" element={<CVEditorPage />} />
                 <Route path="/cv-analyzer" element={<CVAnalyzerPage />} />

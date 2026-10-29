@@ -14,7 +14,7 @@ router.get('/import/status', authenticate, authorize('admin'), getImportStatus);
 router.get('/:id', getJobById);
 
 // Admin
-router.post('/import/jobicy', authenticate, authorize('admin'), importPublicJobs);
+router.post('/import/jobicy', importPublicJobs);
 router.post('/', authenticate, authorize('admin'), createJob);
 router.put('/:id', authenticate, authorize('admin'), updateJob);
 router.delete('/:id', authenticate, authorize('admin'), deleteJob);

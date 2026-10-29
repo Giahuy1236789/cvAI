@@ -116,16 +116,17 @@ const checkGeminiConnection = async () => {
   return { model: GEMINI_MODEL };
 };
 
-const performGeminiRequest = async ({ systemPrompt, userPrompt, schema, jsonGuide, temperature = 0.2, maxOutputTokens = 4096 }) => {
+const performGeminiRequest = async ({ systemPrompt, userPrompt, parts, schema, jsonGuide, temperature = 0.2, maxOutputTokens = 4096 }) => {
   const requiredKeys = Array.isArray(schema?.required) ? schema.required.join(', ') : '';
   const jsonInstruction = `\n\nBẮT BUỘC: Chỉ trả về một JSON hợp lệ, không có Markdown hay lời dẫn. Các khóa bắt buộc: ${requiredKeys}. ${jsonGuide || ''}`;
   // A small reasoning budget keeps interactive CV actions responsive.
   const thinkingConfig = /^gemini-3/.test(GEMINI_MODEL) ? { thinkingLevel: 'low' }
     : /^gemini-2\.5-flash/.test(GEMINI_MODEL) ? { thinkingBudget: 0 } : undefined;
+  const contentParts = Array.isArray(parts) && parts.length > 0 ? parts : [{ text: userPrompt }];
   const payload = await fetchGemini(':generateContent', {
     body: {
       systemInstruction: { parts: [{ text: `${systemPrompt}${jsonInstruction}` }] },
-      contents: [{ role: 'user', parts: [{ text: userPrompt }] }],
+      contents: [{ role: 'user', parts: contentParts }],
       generationConfig: {
         temperature,
         maxOutputTokens,
@@ -418,7 +419,7 @@ const recommendJobsWithAI = async (student, jobs) => {
     jsonGuide: 'recommendations là mảng {"jobId":"...","score":0-100,"reason":"...","matchedSkills":["..."],"missingSkills":["..."],"preparationSteps":["..."]}. Mỗi mảng kỹ năng tối đa 5 phần tử, preparationSteps tối đa 2 phần tử và reason không quá 2 câu.',
     temperature: 0.2,
     maxOutputTokens: openings.length === 1 ? 4096 : 8192,
-    systemPrompt: 'Bạn là chuyên gia tư vấn nghề nghiệp IT tại Việt Nam. So sánh toàn diện hồ sơ ứng viên với các việc làm được cung cấp dựa trên kỹ năng, kinh nghiệm, dự án, mục tiêu, địa điểm, mức lương và mô tả công việc. Không dùng công thức điểm cố định, không bịa kỹ năng hay yêu cầu. Trả toàn bộ bằng tiếng Việt và JSON đúng schema, không Markdown.',
+    systemPrompt: 'Bạn là chuyên gia tư vấn nghề nghiệp IT tại Việt Nam. So sánh toàn diện hồ sơ ứng viên với các việc làm được cung cấp dựa trên kỹ năng, kinh nghiệm, dự án, mục tiêu, địa điểm (ưu tiên việc làm tại Việt Nam), mức lương và mô tả công việc. Không dùng công thức điểm cố định, không bịa kỹ năng hay yêu cầu. Trả toàn bộ bằng tiếng Việt và JSON đúng schema, không Markdown.',
     userPrompt: `Xếp hạng TẤT CẢ công việc sau cho ứng viên. Phải trả đúng một kết quả cho mỗi jobId và giữ nguyên jobId. Mỗi kết quả cần một câu giải thích lý do, các kỹ năng khớp/thiếu và 1-2 bước chuẩn bị ngắn trước khi ứng tuyển.\n\nỨng viên:\n${JSON.stringify(candidate)}\n\nViệc làm:\n${JSON.stringify(openings)}`,
   });
 
@@ -439,4 +440,139 @@ const recommendJobsWithAI = async (student, jobs) => {
   };
 };
 
-module.exports = { generateCVContent, analyzeCV, improveCV, recommendJobsWithAI, checkGeminiConnection, GEMINI_MODEL };
+const CV_PARSED_SCHEMA = {
+  type: 'object',
+  additionalProperties: false,
+  required: [
+    'title', 'fullName', 'jobTitle', 'email', 'phone', 'address', 'dob', 'website',
+    'careerObjective', 'skills', 'education', 'experiences', 'projects', 'certificates',
+    'languages', 'hobbies'
+  ],
+  properties: {
+    title: { type: 'string' },
+    fullName: { type: 'string' },
+    jobTitle: { type: 'string' },
+    email: { type: 'string' },
+    phone: { type: 'string' },
+    address: { type: 'string' },
+    dob: { type: 'string' },
+    website: { type: 'string' },
+    careerObjective: { type: 'string' },
+    skills: { type: 'array', items: { type: 'string' } },
+    education: {
+      type: 'array',
+      items: {
+        type: 'object',
+        additionalProperties: false,
+        required: ['school', 'major', 'startYear', 'endYear', 'degree'],
+        properties: {
+          school: { type: 'string' },
+          major: { type: 'string' },
+          startYear: { type: 'string' },
+          endYear: { type: 'string' },
+          degree: { type: 'string' }
+        }
+      }
+    },
+    experiences: {
+      type: 'array',
+      items: {
+        type: 'object',
+        additionalProperties: false,
+        required: ['company', 'position', 'startDate', 'endDate', 'isCurrent', 'description'],
+        properties: {
+          company: { type: 'string' },
+          position: { type: 'string' },
+          startDate: { type: 'string' },
+          endDate: { type: 'string' },
+          isCurrent: { type: 'boolean' },
+          description: { type: 'string' }
+        }
+      }
+    },
+    projects: {
+      type: 'array',
+      items: {
+        type: 'object',
+        additionalProperties: false,
+        required: ['name', 'role', 'startDate', 'endDate', 'technologies', 'description'],
+        properties: {
+          name: { type: 'string' },
+          role: { type: 'string' },
+          startDate: { type: 'string' },
+          endDate: { type: 'string' },
+          technologies: { type: 'array', items: { type: 'string' } },
+          description: { type: 'string' }
+        }
+      }
+    },
+    certificates: {
+      type: 'array',
+      items: {
+        type: 'object',
+        additionalProperties: false,
+        required: ['name', 'time'],
+        properties: {
+          name: { type: 'string' },
+          time: { type: 'string' }
+        }
+      }
+    },
+    languages: { type: 'array', items: { type: 'string' } },
+    hobbies: { type: 'array', items: { type: 'string' } }
+  }
+};
+
+const parseCVDocument = async ({ textContent, fileData, mimeType }) => {
+  const parts = [];
+  if (fileData && mimeType) {
+    const base64Data = Buffer.isBuffer(fileData) ? fileData.toString('base64') : fileData;
+    parts.push({
+      inlineData: {
+        mimeType,
+        data: base64Data,
+      },
+    });
+  }
+  const promptText = `Trích xuất toàn bộ thông tin từ tài liệu CV này thành JSON có cấu trúc chính xác theo schema đã cung cấp. 
+Nếu không tìm thấy thông tin nào đó trong CV, hãy điền chuỗi rỗng "" hoặc mảng rỗng [].
+Các trường cần trích xuất:
+- fullName: Họ và tên ứng viên
+- jobTitle: Chức danh/vị trí công việc (VD: Frontend Developer, Software Engineer, v.v.)
+- title: Tiêu đề bản CV (VD: CV - [Họ tên] - [Vị trí])
+- email, phone, address, dob (ngày sinh), website (portfolio, github, linkedin)
+- careerObjective: Mục tiêu nghề nghiệp hoặc tóm tắt bản thân
+- skills: Danh sách kỹ năng (mảng chuỗi)
+- education: Danh sách học vấn gồm school, major, startYear, endYear, degree
+- experiences: Danh sách kinh nghiệm làm việc gồm company, position, startDate, endDate, isCurrent (boolean), description
+- projects: Danh sách dự án gồm name, role, startDate, endDate, technologies (mảng chuỗi), description
+- certificates: Danh sách chứng chỉ kèm thời gian (name, time)
+- languages: Ngoại ngữ (mảng chuỗi)
+- hobbies: Sở thích (mảng chuỗi)
+
+${textContent ? `Nội dung văn bản trích xuất từ CV:\n${clipText(textContent, 12000)}` : ''}`;
+
+  parts.push({ text: promptText });
+
+  const result = await requestGemini({
+    schema: CV_PARSED_SCHEMA,
+    jsonGuide: 'Trích xuất chính xác, trung thực theo nội dung tài liệu. Trả về JSON đúng cấu trúc.',
+    parts,
+    temperature: 0.1,
+    maxOutputTokens: 4096,
+    systemPrompt: 'Bạn là chuyên gia trích xuất dữ liệu hồ sơ CV (CV Parser) chuyên nghiệp tại Việt Nam. Nhiệm vụ của bạn là đọc nội dung CV từ văn bản hoặc tài liệu đính kèm và trích xuất thành JSON có cấu trúc chính xác, chuẩn xác từng trường. Giữ nguyên tiếng Việt và tiếng Anh như trong CV.',
+  });
+
+  return { success: true, data: result };
+};
+
+module.exports = {
+  generateCVContent,
+  analyzeCV,
+  improveCV,
+  recommendJobsWithAI,
+  parseCVDocument,
+  checkGeminiConnection,
+  GEMINI_MODEL
+};
+

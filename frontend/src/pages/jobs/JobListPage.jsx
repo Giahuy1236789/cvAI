@@ -3,7 +3,7 @@ import { Link, useSearchParams } from 'react-router-dom';
 import { Search, MapPin, Briefcase, SlidersHorizontal, Sparkles, Bookmark, ArrowUpRight, ArrowRight, X } from 'lucide-react';
 import api from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
-import { formatSalary, getJobicySourceUrl, isJobicyJob } from './jobPresentation';
+import { formatSalary, getJobicySourceUrl, isJobicyJob, isMockVnJob } from './jobPresentation';
 import './jobs.css';
 
 const JobListPage = () => {
@@ -13,6 +13,8 @@ const JobListPage = () => {
   const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [importing, setImporting] = useState(false);
+  const [importMessage, setImportMessage] = useState(null);
   const [retry, setRetry] = useState(0);
   const [savedJobIds, setSavedJobIds] = useState(new Set());
   const [savingIds, setSavingIds] = useState(new Set());
@@ -21,12 +23,22 @@ const JobListPage = () => {
   const query = searchParams.toString();
   const activeFilters = ['location', 'experience', 'employmentType', 'salaryMin'].filter((key) => searchParams.get(key));
 
+  const [cvs, setCvs] = useState([]);
+  const [selectedCvId, setSelectedCvId] = useState('');
+  
   useEffect(() => {
     let cancelled = false;
     setSearch(new URLSearchParams(query).get('search') || '');
     setLoading(true);
     setError('');
-    api.get(`/jobs?${query}`).then((res) => {
+    
+    // Add cvId to query if selected
+    const queryWithCv = new URLSearchParams(query);
+    if (selectedCvId) {
+      queryWithCv.set('cvId', selectedCvId);
+    }
+    
+    api.get(`/jobs?${queryWithCv.toString()}`).then((res) => {
       if (!cancelled && res.data.success) setJobs(res.data.data.jobs);
     }).catch(() => {
       if (!cancelled) setError('Chưa thể tải danh sách việc làm. Vui lòng thử lại.');
@@ -34,7 +46,7 @@ const JobListPage = () => {
       if (!cancelled) setLoading(false);
     });
     return () => { cancelled = true; };
-  }, [query, retry]);
+  }, [query, retry, selectedCvId]);
 
   useEffect(() => {
     let cancelled = false;
@@ -42,6 +54,11 @@ const JobListPage = () => {
     api.get('/saved-jobs').then((res) => {
       if (!cancelled && res.data.success) setSavedJobIds(new Set(res.data.data.savedJobs.map((item) => item.jobId)));
     }).catch((err) => console.error('Error fetching saved jobs:', err));
+    
+    api.get('/cvs').then((res) => {
+      if (!cancelled && res.data.success) setCvs(res.data.data.cvs || []);
+    }).catch((err) => console.error('Error fetching CVs:', err));
+    
     return () => { cancelled = true; };
   }, [isStudent]);
 
@@ -77,6 +94,23 @@ const JobListPage = () => {
     finally { setSavingIds((prev) => { const next = new Set(prev); next.delete(jobId); return next; }); }
   };
 
+  const handleImportPublicJobs = async () => {
+    setImporting(true);
+    setImportMessage(null);
+    try {
+      const res = await api.post('/jobs/import/jobicy', { count: 20 });
+      if (res.data.success) {
+        setImportMessage({ type: 'success', text: res.data.message });
+        setRetry((r) => r + 1);
+      }
+    } catch (err) {
+      setImportMessage({ type: 'error', text: err.response?.data?.message || 'Không thể đồng bộ việc làm lúc này.' });
+    } finally {
+      setImporting(false);
+      setTimeout(() => setImportMessage(null), 5000);
+    }
+  };
+
   return (
     <div className="jobs-page">
       <header className="jobs-heading">
@@ -92,6 +126,25 @@ const JobListPage = () => {
         <aside className="jobs-filter-column">
           <button className="jobs-mobile-filter jobs-button jobs-button-secondary" onClick={() => setFiltersOpen(!filtersOpen)} aria-expanded={filtersOpen} aria-controls="job-filters"><SlidersHorizontal size={17} /> Bộ lọc {activeFilters.length > 0 && `(${activeFilters.length})`}</button>
           <div id="job-filters" className={`jobs-filter-panel ${filtersOpen ? 'is-open' : ''}`}>
+            {isStudent && cvs.length > 0 && (
+              <div className="jobs-filter-group" style={{ marginBottom: '20px', paddingBottom: '16px', borderBottom: '1px solid #edf1ef' }}>
+                <label htmlFor="cv-selector" style={{ fontWeight: 600, color: '#0f766e', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <Sparkles size={16} /> CV cần phân tích
+                </label>
+                <select 
+                  id="cv-selector" 
+                  value={selectedCvId} 
+                  onChange={(e) => setSelectedCvId(e.target.value)}
+                  style={{ width: '100%', padding: '8px 12px', borderRadius: '8px', border: '1px solid #d9e3df', marginTop: '8px', fontSize: '13px' }}
+                >
+                  <option value="">-- Mặc định (Hồ sơ gốc) --</option>
+                  {cvs.map(cv => (
+                    <option key={cv.id} value={cv.id}>{cv.title}</option>
+                  ))}
+                </select>
+                <p style={{ fontSize: '12px', color: '#6b7c79', marginTop: '6px' }}>Chọn CV để hệ thống tự động lọc và sắp xếp việc làm phù hợp nhất.</p>
+              </div>
+            )}
             <div className="jobs-panel-heading"><h2><SlidersHorizontal size={17} /> Bộ lọc tìm kiếm</h2>{query && <button onClick={clearFilters} className="jobs-text-button">Đặt lại</button>}</div>
             <div className="jobs-filter-group"><label htmlFor="job-experience">Cấp bậc kinh nghiệm</label><select id="job-experience" value={searchParams.get('experience') || ''} onChange={(e) => updateFilter('experience', e.target.value)}><option value="">Tất cả cấp bậc</option><option value="Intern">Thực tập sinh</option><option value="Fresher">Fresher / Mới tốt nghiệp</option><option value="Junior">Junior / 1–2 năm</option></select></div>
             <fieldset className="jobs-filter-group"><legend>Hình thức làm việc</legend>{[['', 'Tất cả hình thức'], ['Full-time', 'Toàn thời gian'], ['Part-time', 'Bán thời gian']].map(([value, label]) => <label className="jobs-radio" key={value}><input type="radio" name="employmentType" value={value} checked={(searchParams.get('employmentType') || '') === value} onChange={() => updateFilter('employmentType', value)} /><span>{label}</span></label>)}</fieldset>
@@ -100,7 +153,29 @@ const JobListPage = () => {
           {isStudent && <div className="jobs-match-prompt"><Sparkles size={23} /><h3>Cơ hội dành riêng cho bạn</h3><p>Khám phá những việc làm phù hợp với kỹ năng trong hồ sơ của bạn.</p><Link to="/recommendations">Xem gợi ý AI <ArrowRight size={15} /></Link></div>}
         </aside>
         <section className="jobs-results" aria-label="Kết quả tìm việc" aria-busy={loading}>
-          <div className="jobs-results-heading"><div><h2>{searchParams.get('search') ? `Kết quả cho “${searchParams.get('search')}”` : 'Khám phá việc làm'}</h2><p role="status">{loading ? 'Đang tìm cơ hội phù hợp…' : error ? 'Tạm thời chưa có kết quả' : `${jobs.length} cơ hội đang chờ bạn khám phá`}</p></div><span className="jobs-results-label">IT & Công nghệ</span></div>
+          <div className="jobs-results-heading">
+            <div>
+              <h2>{searchParams.get('search') ? `Kết quả cho “${searchParams.get('search')}”` : 'Khám phá việc làm'}</h2>
+              <p role="status">{loading ? 'Đang tìm cơ hội phù hợp…' : error ? 'Tạm thời chưa có kết quả' : `${jobs.length} cơ hội đang chờ bạn khám phá`}</p>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              {importMessage && (
+                <span style={{ fontSize: '13px', color: importMessage.type === 'success' ? '#10b981' : '#ef4444' }}>
+                  {importMessage.text}
+                </span>
+              )}
+              <button 
+                onClick={handleImportPublicJobs} 
+                disabled={importing}
+                className="jobs-button jobs-button-secondary"
+                style={{ whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: '6px' }}
+              >
+                <Sparkles size={16} />
+                {importing ? 'Đang tải...' : 'Tải thêm việc làm'}
+              </button>
+              <span className="jobs-results-label">IT & Công nghệ</span>
+            </div>
+          </div>
           {!loading && !error && jobs.some(isJobicyJob) && <p className="jobs-source-notice">Tin việc làm từ <a href="https://jobicy.com" target="_blank" rel="noopener noreferrer">Jobicy</a>. Việc làm từ xa có thể giới hạn quốc gia; hãy kiểm tra khu vực được ứng tuyển và trạng thái tuyển dụng trong tin gốc.</p>}
           {activeFilters.length > 0 && <div className="jobs-active-filters">{activeFilters.map((key) => <button key={key} onClick={() => updateFilter(key, '')} aria-label={`Bỏ bộ lọc ${searchParams.get(key)}`}>{key === 'salaryMin' ? `Từ ${Number(searchParams.get(key)) / 1000000} triệu` : searchParams.get(key)}<X size={13} /></button>)}</div>}
           {saveError && <p className="jobs-inline-error" role="alert">{saveError}</p>}
@@ -111,6 +186,7 @@ const JobListPage = () => {
               <div className="job-card-top"><div className="jobs-company-avatar" aria-hidden="true">{(job.company?.name || 'IT').slice(0, 2).toUpperCase()}</div><div className="job-card-title"><p>{job.company?.name || 'Công ty công nghệ'}</p><h3><Link to={`/jobs/${job.id}`}>{job.title}</Link></h3></div>{isStudent && <button className={`jobs-save-button ${savedJobIds.has(job.id) ? 'is-saved' : ''}`} onClick={() => handleToggleSave(job.id)} disabled={savingIds.has(job.id)} aria-label={savedJobIds.has(job.id) ? `Bỏ lưu ${job.title}` : `Lưu ${job.title}`} aria-pressed={savedJobIds.has(job.id)} title={savedJobIds.has(job.id) ? 'Đã lưu việc làm' : 'Lưu việc làm'}><Bookmark size={19} fill={savedJobIds.has(job.id) ? 'currentColor' : 'none'} /></button>}</div>
               <div className="job-card-meta"><span><MapPin size={15} />{job.location || 'Chưa cập nhật địa điểm'}</span>{job.experience && <span><Briefcase size={15} />{job.experience}</span>}{job.employmentType && <span>{job.employmentType}</span>}</div>
               {isJobicyJob(job) && <div className="job-source-row"><span className="job-source-badge">Nguồn: Jobicy</span>{getJobicySourceUrl(job) && <a href={getJobicySourceUrl(job)} target="_blank" rel="noopener noreferrer">Xem tin gốc <ArrowUpRight size={13} /></a>}</div>}
+              {isMockVnJob(job) && <div className="job-source-row"><span className="job-source-badge" style={{backgroundColor: '#eff6ff', color: '#1d4ed8', border: '1px solid #bfdbfe'}}>Nguồn: Top Công ty VN</span></div>}
               {(job.skills || []).length > 0 && <div className="jobs-skill-tags">{job.skills.slice(0, 5).map((skill, index) => <span key={index}>{skill}</span>)}{job.skills.length > 5 && <span>+{job.skills.length - 5}</span>}</div>}
               <div className="job-card-footer"><p>{formatSalary(job)}</p><Link to={`/jobs/${job.id}`}>Xem chi tiết <ArrowUpRight size={17} /></Link></div>
             </article>)}</div>}

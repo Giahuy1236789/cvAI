@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import api from '../../services/api';
-import { FileText, Plus, Edit, Trash2, Search, ArrowRight, AlertCircle } from 'lucide-react';
+import { FileText, Plus, Edit, Trash2, Search, ArrowRight, AlertCircle, UploadCloud } from 'lucide-react';
 import '../workspace-pages.css';
 
 const CVListPage = () => {
+  const navigate = useNavigate();
   const [cvs, setCvs] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [uploading, setUploading] = useState(false);
   const [error, setError] = useState('');
   const [search, setSearch] = useState('');
   const [sort, setSort] = useState('recent');
@@ -26,6 +28,47 @@ const CVListPage = () => {
       setLoading(false);
     }
   }
+
+  const handleUploadCV = async (file) => {
+    if (!file) return;
+    const validExtensions = /\.(pdf|docx|doc|txt|json|png|jpg|jpeg|webp)$/i;
+    if (!validExtensions.test(file.name)) {
+      setError('Định dạng file chưa được hỗ trợ. Vui lòng tải file PDF, Word (DOCX/DOC), TXT hoặc Ảnh CV.');
+      return;
+    }
+    if (file.size > 10 * 1024 * 1024) {
+      setError('File quá lớn (tối đa 10MB).');
+      return;
+    }
+
+    setUploading(true);
+    setError('');
+
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('saveToDb', 'true');
+      formData.append('template', 'topcv-blue');
+
+      const res = await api.post('/cvs/upload-and-parse', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+
+      if (res.data.success && res.data.data?.cv) {
+        navigate(`/cv-editor/${res.data.data.cv.id}`);
+      } else if (res.data.success && res.data.data?.parsed) {
+        sessionStorage.setItem('pendingUploadedCV', JSON.stringify(res.data.data.parsed));
+        navigate('/cv-editor');
+      } else {
+        throw new Error(res.data.message || 'Không thể trích xuất CV.');
+      }
+    } catch (err) {
+      console.error('Error uploading CV in list page:', err);
+      setError(err.response?.data?.message || err.message || 'Lỗi khi tải lên và phân tích CV.');
+    } finally {
+      setUploading(false);
+    }
+  };
 
   const handleDelete = async (id) => {
     if (!window.confirm('Bạn có chắc muốn xóa CV này không?')) return;
@@ -52,7 +95,22 @@ const CVListPage = () => {
           <h1>CV của bạn</h1>
           <p>Quản lý và hoàn thiện từng phiên bản CV cho cơ hội tiếp theo.</p>
         </div>
-        <Link to="/cv-editor" className="workspace-primary"><Plus className="w-4 h-4" />Tạo CV mới</Link>
+        <div className="flex flex-wrap items-center gap-2">
+          <label className="workspace-secondary flex items-center gap-1.5 cursor-pointer">
+            <UploadCloud className="w-4 h-4 text-indigo-600" />
+            <span>{uploading ? 'Đang trích xuất CV...' : 'Tải lên CV'}</span>
+            <input
+              type="file"
+              accept=".pdf,.docx,.doc,.txt,.json,image/*"
+              className="hidden"
+              disabled={uploading}
+              onChange={(e) => {
+                if (e.target.files?.[0]) handleUploadCV(e.target.files[0]);
+              }}
+            />
+          </label>
+          <Link to="/cv-templates" className="workspace-primary"><Plus className="w-4 h-4" />Tạo CV mới</Link>
+        </div>
       </header>
 
       {error && <div className="workspace-alert" role="alert"><AlertCircle className="w-4 h-4 shrink-0" />{error}</div>}
@@ -86,8 +144,23 @@ const CVListPage = () => {
         <div className="workspace-empty">
           <div className="workspace-empty-icon"><FileText className="w-7 h-7" /></div>
           <h2>Bắt đầu với CV đầu tiên</h2>
-          <p>Thông tin từ hồ sơ cá nhân sẽ được điền sẵn để bạn tập trung thể hiện thế mạnh của mình.</p>
-          <Link to="/cv-editor" className="workspace-primary">Tạo CV của bạn<ArrowRight className="w-4 h-4" /></Link>
+          <p>Tải lên file CV có sẵn để AI trích xuất thông tin, hoặc bắt đầu từ mẫu chuẩn ATS.</p>
+          <div className="flex flex-wrap justify-center items-center gap-3">
+            <label className="workspace-secondary flex items-center gap-1.5 cursor-pointer">
+              <UploadCloud className="w-4 h-4 text-indigo-600" />
+              <span>{uploading ? 'Đang đọc CV...' : 'Tải lên CV có sẵn'}</span>
+              <input
+                type="file"
+                accept=".pdf,.docx,.doc,.txt,.json,image/*"
+                className="hidden"
+                disabled={uploading}
+                onChange={(e) => {
+                  if (e.target.files?.[0]) handleUploadCV(e.target.files[0]);
+                }}
+              />
+            </label>
+            <Link to="/cv-templates" className="workspace-primary">Chọn mẫu & tạo mới<ArrowRight className="w-4 h-4" /></Link>
+          </div>
           <div className="mt-5"><Link to="/profile" className="text-xs font-medium text-slate-500 hover:text-teal-700">Cập nhật hồ sơ cá nhân trước</Link></div>
         </div>
       ) : filtered.length === 0 ? (
