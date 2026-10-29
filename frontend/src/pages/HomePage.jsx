@@ -22,7 +22,7 @@ function CareerPreview() {
     <div className="preview-spark preview-spark-two" aria-hidden="true">✦</div>
     <div className="preview-document">
       <div className="preview-document-bar"><span><span className="status-dot" /> Hồ sơ sự nghiệp</span><span>CV mẫu</span></div>
-      <div className="preview-person"><span className="preview-avatar">MA<span><Check size={11} /></span></span><div><h3>Minh Anh</h3><p>Frontend Developer</p><span className="preview-location"><MapPin size={12} /> Hồ Chí Minh, Việt Nam</span></div></div>
+      <div className="preview-person"><span className="preview-avatar">GH<span><Check size={11} /></span></span><div><h3>Gia Huy</h3><p>Frontend Developer</p><span className="preview-location"><MapPin size={12} /> Hồ Chí Minh, Việt Nam</span></div></div>
       <div className="preview-section"><span className="preview-label">GIỚI THIỆU</span><p>Biến ý tưởng thành những trải nghiệm số dễ dùng, chỉn chu và có ý nghĩa.</p></div>
       <div className="preview-section"><span className="preview-label">KỸ NĂNG NỔI BẬT</span><div className="preview-skills">{['React', 'JavaScript', 'UI / UX', 'Figma'].map(skill => <span key={skill}>{skill}</span>)}</div></div>
       <div className="preview-section"><span className="preview-label">HÀNH TRÌNH CỦA BẠN</span><div className="preview-timeline"><span /><div><strong>Sẵn sàng cho cơ hội đầu tiên</strong><p>Học vấn, dự án và kỹ năng trong một hồ sơ.</p></div></div></div>
