@@ -93,7 +93,9 @@ const getRecommendations = async (req, res) => {
     const cacheKey = createCacheKey(student, jobs, req.query.cvId);
     const cached = recommendationCache.get(cacheKey);
     if (cached && Date.now() - cached.createdAt < RECOMMENDATION_CACHE_MS) {
-      return res.json({ success: true, data: { ...cached.data, cached: true } });
+      if (req.query.mode === 'fast' || cached.data?.aiAvailable) {
+        return res.json({ success: true, data: { ...cached.data, cached: true } });
+      }
     }
 
     // Select candidates by profile matching before requesting AI explanations.
@@ -140,6 +142,7 @@ const getRecommendations = async (req, res) => {
         throw createGeminiError('GEMINI_INVALID_RESPONSE', 'Gemini returned no recommendations array.');
       }
     } catch (error) {
+      console.error('Error in recommendJobsWithAI:', error?.message || error);
       if (!isGeminiError(error)) throw error;
       recommendations = getFallbackRecommendations(student, jobsForAI, companies)
         .sort((a, b) => {

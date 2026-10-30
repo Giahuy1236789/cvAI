@@ -66,8 +66,9 @@ const RecommendationPage = () => {
       if (!res.data.success) throw new Error(res.data.message || 'Không thể tải gợi ý việc làm lúc này.');
       applyRecommendations(res.data.data);
       setAiLoading(false);
-      if (res.data.data.aiLoading) {
-        setAiError('AI chưa chạy tự động để tránh dùng quota ngoài ý muốn. Bấm “Phân tích bằng AI” khi bạn cần nhận xét chi tiết.');
+      // Auto-trigger detailed AI evaluation in the background right after fast recommendations load
+      if (res.data.data.recommendations?.length > 0 && !res.data.data.aiAvailable) {
+        loadDetailedAIRecommendations(lifecycle);
       }
     } catch (err) {
       if (!lifecycle.active) return;
@@ -91,11 +92,9 @@ const RecommendationPage = () => {
       applyRecommendations(res.data.data);
     } catch (err) {
       if (!lifecycle.active) return;
-      // The quick shortlist remains usable even if the local model is busy.
       console.error('Error loading detailed AI recommendations:', err);
       setAiAvailable(false);
-      setOverallAdvice('');
-      setAiError(err.response?.data?.message || 'AI chưa thể hoàn tất phân tích. Bạn có thể thử lại.');
+      setAiError(err.response?.data?.message || 'AI chưa thể hoàn tất phân tích. Bạn có thể bấm nút bên dưới để thử lại.');
     } finally {
       lifecycle.analyzing = false;
       if (lifecycle.active) setAiLoading(false);
@@ -265,25 +264,59 @@ const RecommendationPage = () => {
             ) : recommendations.length === 0 ? (
               <p>Chưa có việc làm để AI phân tích. Hãy bổ sung hồ sơ hoặc quay lại khi có cơ hội mới.</p>
             ) : aiLoading ? (
-              <>
-                <div className="match-status" role="status"><RefreshCw className="w-4 h-4 shrink-0 animate-spin" />AI đang phân tích từng việc làm...</div>
-                <p>Bạn có thể xem trước kết quả đối chiếu hồ sơ. AI có thể cần vài phút ở lần chạy đầu hoặc khi máy đang bận.</p>
-              </>
-            ) : aiError || !aiAvailable || aiResultCount === 0 ? (
-              <>
-                <div className="mt-4 rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900" role="alert">
-                  <strong className="flex items-center gap-2"><AlertCircle className="w-4 h-4 shrink-0" />Chưa có phân tích từ AI</strong>
-                  <div className="mt-2">{aiError || 'AI chưa trả về đánh giá cho các việc làm này.'}</div>
+              <div className="mt-3 p-4 rounded-xl bg-gradient-to-br from-teal-50 to-cyan-50 border border-teal-200/60 shadow-sm space-y-3">
+                <div className="flex items-center gap-2 text-teal-800 font-semibold text-sm">
+                  <RefreshCw className="w-4 h-4 animate-spin text-teal-600" />
+                  <span>AI Gemini đang phân tích hồ sơ...</span>
                 </div>
-                <p>Danh sách hiện tại được đối chiếu theo hồ sơ. Điểm và lý do có thể thay đổi khi AI hoàn tất đánh giá.</p>
-                <button type="button" onClick={() => loadDetailedAIRecommendations()} className="workspace-secondary"><Sparkles className="w-4 h-4" />Phân tích bằng AI</button>
-              </>
+                <p className="text-xs text-slate-600 leading-relaxed">
+                  Hệ thống đang đối chiếu kỹ năng, kinh nghiệm và mục tiêu của bạn với 12 việc làm hàng đầu.
+                </p>
+                <div className="w-full bg-slate-200/70 rounded-full h-1.5 overflow-hidden">
+                  <div className="bg-gradient-to-r from-teal-500 to-cyan-500 h-1.5 rounded-full animate-pulse" style={{ width: '85%' }}></div>
+                </div>
+              </div>
+            ) : aiAvailable && aiResultCount > 0 ? (
+              <div className="space-y-3 mt-3">
+                <div className="match-status flex items-center gap-2 font-medium text-emerald-700 bg-emerald-50 px-3 py-2 rounded-lg border border-emerald-100" role="status">
+                  <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-600" />
+                  <span>AI đã đánh giá {aiResultCount}/{recommendations.length} việc làm</span>
+                </div>
+                <div className="text-xs text-slate-700 bg-slate-50 p-3.5 rounded-xl border border-slate-200/70 leading-relaxed font-normal">
+                  {overallAdvice || 'Xem đánh giá, kỹ năng cần bổ sung và gợi ý chuẩn bị trong từng việc làm.'}
+                </div>
+                {aiResultCount < recommendations.length && (
+                  <p className="text-[11px] text-slate-500">Các việc làm chưa có đánh giá từ AI vẫn hiển thị kết quả đối chiếu hồ sơ.</p>
+                )}
+                <button 
+                  type="button" 
+                  onClick={() => loadDetailedAIRecommendations()} 
+                  className="w-full inline-flex items-center justify-center gap-1.5 text-xs text-slate-600 hover:text-teal-700 font-medium py-1.5 transition-colors"
+                >
+                  <RefreshCw className="w-3.5 h-3.5" />
+                  Phân tích lại với AI
+                </button>
+              </div>
             ) : (
-              <>
-                <div className="match-status" role="status"><CheckCircle2 className="w-4 h-4 shrink-0" />AI đã đánh giá {aiResultCount}/{recommendations.length} việc làm</div>
-                <p>{overallAdvice || 'Xem đánh giá, kỹ năng cần bổ sung và gợi ý chuẩn bị trong từng việc làm.'}</p>
-                {aiResultCount < recommendations.length && <p>Các việc làm chưa có đánh giá từ AI vẫn hiển thị kết quả đối chiếu hồ sơ.</p>}
-              </>
+              <div className="space-y-3 mt-3">
+                <div className="p-4 rounded-xl bg-gradient-to-br from-slate-50 to-teal-50/30 border border-slate-200/80">
+                  <div className="flex items-center gap-2 text-slate-800 font-semibold text-sm mb-1.5">
+                    <Sparkles className="w-4 h-4 text-teal-600" />
+                    <span>Kích hoạt đánh giá AI</span>
+                  </div>
+                  <p className="text-xs text-slate-600 leading-relaxed mb-3">
+                    {aiError || 'Kết quả hiện tại đang đối chiếu theo kỹ năng hồ sơ. Bấm nút dưới để AI Gemini phân tích chi tiết từng việc làm.'}
+                  </p>
+                  <button 
+                    type="button" 
+                    onClick={() => loadDetailedAIRecommendations()} 
+                    className="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-teal-600 to-cyan-600 text-white font-semibold text-xs py-2.5 px-4 shadow-md shadow-teal-500/15 hover:shadow-lg hover:shadow-teal-500/25 transition-all transform hover:-translate-y-0.5 active:translate-y-0 cursor-pointer"
+                  >
+                    <Sparkles className="w-4 h-4" />
+                    Phân tích bằng AI Gemini
+                  </button>
+                </div>
+              </div>
             )}
             {!loading && !error && <div className="match-summary"><span>Cơ hội có độ phù hợp từ 70%</span><strong>{strongMatches}</strong></div>}
           </section>

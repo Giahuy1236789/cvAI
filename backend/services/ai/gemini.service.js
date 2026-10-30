@@ -258,7 +258,6 @@ const CV_IMPROVEMENT_SCHEMA = {
 
 const JOB_RECOMMENDATION_SCHEMA = {
   type: 'object',
-  additionalProperties: false,
   required: ['overallAdvice', 'recommendations'],
   properties: {
     overallAdvice: { type: 'string' },
@@ -266,15 +265,14 @@ const JOB_RECOMMENDATION_SCHEMA = {
       type: 'array',
       items: {
         type: 'object',
-        additionalProperties: false,
         required: ['jobId', 'score', 'reason', 'matchedSkills', 'missingSkills', 'preparationSteps'],
         properties: {
           jobId: { type: 'string' },
-          score: { type: 'integer', minimum: 0, maximum: 100 },
+          score: { type: 'integer' },
           reason: { type: 'string' },
-          matchedSkills: { type: 'array', maxItems: 5, items: { type: 'string' } },
-          missingSkills: { type: 'array', maxItems: 5, items: { type: 'string' } },
-          preparationSteps: { type: 'array', maxItems: 2, items: { type: 'string' } },
+          matchedSkills: { type: 'array', items: { type: 'string' } },
+          missingSkills: { type: 'array', items: { type: 'string' } },
+          preparationSteps: { type: 'array', items: { type: 'string' } },
         },
       },
     },
@@ -406,7 +404,7 @@ const recommendJobsWithAI = async (student, jobs) => {
     properties: {
       ...JOB_RECOMMENDATION_SCHEMA.properties,
       recommendations: {
-        type: 'array', minItems: openings.length, maxItems: openings.length,
+        type: 'array',
         items: {
           ...recommendationItems,
           properties: { ...recommendationItems.properties, jobId: { type: 'string', enum: openings.map((job) => job.id) } },
@@ -423,8 +421,8 @@ const recommendJobsWithAI = async (student, jobs) => {
     userPrompt: `Xếp hạng TẤT CẢ công việc sau cho ứng viên. Phải trả đúng một kết quả cho mỗi jobId và giữ nguyên jobId. Mỗi kết quả cần một câu giải thích lý do, các kỹ năng khớp/thiếu và 1-2 bước chuẩn bị ngắn trước khi ứng tuyển.\n\nỨng viên:\n${JSON.stringify(candidate)}\n\nViệc làm:\n${JSON.stringify(openings)}`,
   });
 
-  if (new Set(result.recommendations.map((item) => item.jobId)).size !== openings.length) {
-    throw createGeminiError('GEMINI_INVALID_RESPONSE', 'Gemini returned duplicate or missing job recommendations.', 502);
+  if (!Array.isArray(result?.recommendations) || result.recommendations.length === 0) {
+    throw createGeminiError('GEMINI_INVALID_RESPONSE', 'Gemini returned no job recommendations.', 502);
   }
 
   return {
