@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link, NavLink, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { ArrowUpRight, Sparkles, Briefcase, FileText, Bookmark, Send, User, LogOut, Menu, X, LayoutDashboard, Building2, Users } from 'lucide-react';
+import { ArrowUpRight, Sparkles, Briefcase, FileText, Bookmark, LogOut, Menu, X, LayoutDashboard, Building2, Users } from 'lucide-react';
 
 export const Brand = () => (
   <Link to="/" className="brand" aria-label="AICareer — Trang chủ">
@@ -21,13 +21,20 @@ const Navbar = () => {
   }, []);
 
   const links = isStudent ? [
-    ['/jobs', Briefcase, 'Tìm việc làm'], ['/recommendations', Sparkles, 'Gợi ý việc làm AI'],
-    ['/cv-analyzer', Sparkles, 'Phân tích CV AI'], ['/saved-jobs', Bookmark, 'Đã lưu'],
-    ['/cvs', FileText, 'Tạo CV'],
+    ['/jobs', Briefcase, 'Tìm việc làm'], 
+    ['/cv-templates', Sparkles, 'Mẫu CV 2026'],
+    ['/recommendations', Sparkles, 'Gợi ý việc làm AI'],
+    ['/cv-analyzer', Sparkles, 'Phân tích CV AI'], 
+    ['/saved-jobs', Bookmark, 'Đã lưu'],
+    ['/cvs', FileText, 'Quản lý CV'],
   ] : isAdmin ? [
     ['/admin/dashboard', LayoutDashboard, 'Tổng quan'], ['/admin/jobs', Briefcase, 'Việc làm'],
     ['/admin/companies', Building2, 'Công ty'], ['/admin/users', Users, 'Tài khoản'],
-  ] : [['/jobs', Briefcase, 'Tìm việc làm'], ['/register', FileText, 'Tạo CV với AI']];
+  ] : [
+    ['/jobs', Briefcase, 'Tìm việc làm'], 
+    ['/cv-templates', Sparkles, 'Mẫu CV 2026 🔥'],
+    ['/register', FileText, 'Tạo CV với AI']
+  ];
   const roleLabel = isAdmin ? 'Quản trị viên' : 'Không gian của bạn';
   const displayName = user?.fullName || user?.name || user?.email?.split('@')[0] || 'Tài khoản';
   const renderLink = ([path, Icon, label]) => (

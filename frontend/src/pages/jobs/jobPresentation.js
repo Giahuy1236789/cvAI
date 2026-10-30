@@ -1,6 +1,17 @@
 export const isJobicyJob = (job) => String(job?.source || '').trim().toLowerCase() === 'jobicy';
 export const isMockVnJob = (job) => String(job?.source || '').trim().toLowerCase() === 'mockvn';
 
+export const decodeHtml = (text) => {
+  if (!text || typeof text !== 'string') return text || '';
+  return text
+    .replace(/&#038;/g, '&')
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&#039;/g, "'");
+};
+
 // Only open the original listing on Jobicy, never an arbitrary URL from a feed.
 export const getJobicySourceUrl = (job) => {
   if (!isJobicyJob(job)) return '';

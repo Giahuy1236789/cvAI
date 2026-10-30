@@ -4,7 +4,7 @@
 .workspace-heading h1 { margin: 0; font-size: clamp(26px, 3vw, 34px); line-height: 1.2; font-weight: 750; letter-spacing: -.035em; }
 .workspace-heading p { max-width: 650px; color: #64748b; font-size: 14px; line-height: 1.7; margin-top: 10px; }
 .workspace-primary, .workspace-secondary { min-height: 42px; padding: 10px 17px; border-radius: 9px; display: inline-flex; align-items: center; justify-content: center; gap: 8px; font-size: 13px; font-weight: 650; transition: background .2s, border-color .2s; white-space: nowrap; }
-.workspace-primary { background: #0f766e; color: #fff; border: 1px solid #0f766e; }
+.workspace-primary { background: linear-gradient(135deg, #0d9488 0%, #059669 100%); color: #fff; border: 1px solid transparent; box-shadow: 0 4px 12px rgba(13, 148, 136, 0.3); }
 .workspace-primary:hover { background: #115e59; border-color: #115e59; }
 .workspace-primary:disabled { opacity: .55; cursor: wait; }
 .workspace-secondary { border: 1px solid #dce3e9; color: #334155; background: #fff; }
@@ -52,10 +52,10 @@
 .cv-search:focus-within { border-color: #0f766e; box-shadow: 0 0 0 2px #ccfbf1; }
 .cv-toolbar select { padding: 11px 12px; border: 1px solid #dce3e9; border-radius: 9px; background: #fff; font-size: 13px; color: #475569; }
 .cv-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px; }
-.cv-card { border: 1px solid #e2e8ed; border-radius: 14px; background: #fff; overflow: hidden; display: flex; flex-direction: column; transition: border-color .2s, box-shadow .2s; }
-.cv-card:hover { border-color: #a9cfc6; box-shadow: 0 8px 24px #172b3a08; }
-.cv-card-top { padding: 22px; display: flex; align-items: center; gap: 12px; border-bottom: 1px solid #edf1f4; background: #f8fafb; }
-.cv-document-icon { width: 44px; height: 50px; display: grid; place-items: center; color: #0f766e; background: #fff; border: 1px solid #dce8e5; border-radius: 8px; }
+.cv-card { border: 1px solid #e2e8f0; border-radius: 16px; background: #fff; overflow: hidden; display: flex; flex-direction: column; transition: all .25s cubic-bezier(0.16, 1, 0.3, 1); box-shadow: 0 2px 8px rgba(0,0,0,0.02); }
+.cv-card:hover { border-color: #0d9488; box-shadow: 0 12px 30px -8px rgba(13, 148, 136, 0.15); transform: translateY(-3px); }
+.cv-card-top { padding: 22px; display: flex; align-items: center; gap: 14px; border-bottom: 1px solid #f1f5f9; background: #f8fafc; }
+.cv-document-icon { width: 46px; height: 52px; display: grid; place-items: center; color: #0d9488; background: linear-gradient(135deg, #f0fdfa 0%, #ccfbf1 100%); border: 1px solid #99f6e4; border-radius: 10px; box-shadow: 0 2px 6px rgba(13, 148, 136, 0.12); }
 .cv-card-content { padding: 22px; flex: 1; }
 .cv-card h2 { font-size: 17px; line-height: 1.5; font-weight: 700; overflow-wrap: anywhere; }
 .cv-card h2 a:hover { color: #0f766e; }
@@ -76,10 +76,10 @@
 .match-card-heading h2 { font-size: 18px; font-weight: 700; line-height: 1.5; }
 .match-card-heading h2 a:hover { color: #0f766e; }
 .match-company { color: #64748b; font-size: 13px; margin-top: 4px; }
-.match-score { flex-shrink: 0; min-width: 76px; padding: 9px 12px; border: 1px solid #cce9e1; background: #f0f9f5; border-radius: 10px; text-align: center; color: #0f766e; }
-.match-score strong { display: block; font-size: 23px; line-height: 1.2; letter-spacing: -.03em; }
-.match-score span { font-size: 10px; }
-.match-score[data-level="low"] { background: #fffbeb; border-color: #f5e5bb; color: #a16207; }
+.match-score { flex-shrink: 0; min-width: 80px; padding: 10px 14px; border: 1px solid #99f6e4; background: linear-gradient(135deg, #f0fdfa 0%, #ccfbf1 100%); border-radius: 12px; text-align: center; color: #0d9488; box-shadow: 0 2px 8px rgba(13, 148, 136, 0.15); }
+.match-score strong { display: block; font-size: 24px; line-height: 1.15; letter-spacing: -.03em; font-weight: 850; }
+.match-score span { font-size: 10.5px; font-weight: 700; text-transform: uppercase; }
+.match-score[data-level="low"] { background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%); border-color: #fde68a; color: #b45309; }
 .match-meta { display: flex; flex-wrap: wrap; gap: 10px 18px; margin: 16px 0 20px; color: #64748b; font-size: 12px; }
 .match-meta span { display: inline-flex; align-items: center; gap: 5px; }
 .match-skills { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; border-top: 1px solid #edf1f4; padding-top: 18px; }
