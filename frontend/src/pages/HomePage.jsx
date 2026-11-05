@@ -267,10 +267,21 @@ export default function HomePage() {
                 <span className="sr-only">Địa điểm làm việc</span>
                 <select value={location} onChange={event => setLocation(event.target.value)}>
                   <option value="">Tất cả địa điểm</option>
-                  <option>Hồ Chí Minh</option>
-                  <option>Hà Nội</option>
-                  <option>Đà Nẵng</option>
-                  <option>Remote / Từ xa</option>
+                  <option value="Hồ Chí Minh">TP. Hồ Chí Minh</option>
+                  <option value="Hà Nội">Hà Nội</option>
+                  <option value="Đà Nẵng">Đà Nẵng</option>
+                  <option value="Cần Thơ">Cần Thơ</option>
+                  <option value="Hải Phòng">Hải Phòng</option>
+                  <option value="Bình Dương">Bình Dương</option>
+                  <option value="Đồng Nai">Đồng Nai</option>
+                  <option value="Vũng Tàu">Bà Rịa - Vũng Tàu</option>
+                  <option value="Huế">Thừa Thiên Huế</option>
+                  <option value="Khánh Hòa">Nha Trang (Khánh Hòa)</option>
+                  <option value="Bình Định">Quy Nhơn (Bình Định)</option>
+                  <option value="Bắc Ninh">Bắc Ninh</option>
+                  <option value="Quảng Ninh">Quảng Ninh</option>
+                  <option value="Đà Lạt">Đà Lạt (Lâm Đồng)</option>
+                  <option value="Remote">Remote / Làm từ xa</option>
                 </select>
               </label>
               <button type="submit" className="button button-primary search-submit-btn">

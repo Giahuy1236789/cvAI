@@ -119,7 +119,27 @@ const JobListPage = () => {
       </header>
       <form className="jobs-search-bar" onSubmit={handleSearchSubmit} role="search">
         <div className="jobs-search-input"><Search size={21} /><input aria-label="Từ khóa tìm việc" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Vị trí, kỹ năng hoặc tên công ty" /></div>
-        <div className="jobs-search-location"><MapPin size={20} /><select aria-label="Địa điểm làm việc" value={searchParams.get('location') || ''} onChange={(e) => updateFilter('location', e.target.value)}><option value="">Tất cả địa điểm</option><option value="Hà Nội">Hà Nội</option><option value="Hồ Chí Minh">Hồ Chí Minh</option><option value="Đà Nẵng">Đà Nẵng</option></select></div>
+        <div className="jobs-search-location">
+          <MapPin size={20} />
+          <select aria-label="Địa điểm làm việc" value={searchParams.get('location') || ''} onChange={(e) => updateFilter('location', e.target.value)}>
+            <option value="">Tất cả địa điểm</option>
+            <option value="Hồ Chí Minh">TP. Hồ Chí Minh</option>
+            <option value="Hà Nội">Hà Nội</option>
+            <option value="Đà Nẵng">Đà Nẵng</option>
+            <option value="Cần Thơ">Cần Thơ</option>
+            <option value="Hải Phòng">Hải Phòng</option>
+            <option value="Bình Dương">Bình Dương</option>
+            <option value="Đồng Nai">Đồng Nai</option>
+            <option value="Vũng Tàu">Bà Rịa - Vũng Tàu</option>
+            <option value="Huế">Thừa Thiên Huế</option>
+            <option value="Khánh Hòa">Nha Trang (Khánh Hòa)</option>
+            <option value="Bình Định">Quy Nhơn (Bình Định)</option>
+            <option value="Bắc Ninh">Bắc Ninh</option>
+            <option value="Quảng Ninh">Quảng Ninh</option>
+            <option value="Đà Lạt">Đà Lạt (Lâm Đồng)</option>
+            <option value="Remote">Remote / Làm từ xa</option>
+          </select>
+        </div>
         <button className="jobs-button jobs-button-primary" type="submit">Tìm việc làm <ArrowRight size={17} /></button>
       </form>
       <div className="jobs-layout">

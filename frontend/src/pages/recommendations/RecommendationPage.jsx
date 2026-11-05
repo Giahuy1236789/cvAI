@@ -26,7 +26,12 @@ const RecommendationPage = () => {
   const isJobInVietnam = (job) => {
     if (job?.isVN !== undefined) return Boolean(job.isVN);
     const loc = (job?.location || '').toLowerCase();
-    return ['hà nội', 'hồ chí minh', 'hcm', 'đà nẵng', 'cần thơ', 'hải phòng', 'bình dương', 'đồng nai', 'huế', 'việt nam', 'vietnam', 'toàn quốc'].some((k) => loc.includes(k));
+    return [
+      'hà nội', 'hồ chí minh', 'hcm', 'đà nẵng', 'cần thơ', 'hải phòng',
+      'bình dương', 'đồng nai', 'huế', 'vũng tàu', 'khánh hòa', 'nha trang',
+      'bình định', 'quy nhơn', 'bắc ninh', 'quảng ninh', 'đà lạt', 'lâm đồng',
+      'việt nam', 'vietnam', 'toàn quốc'
+    ].some((k) => loc.includes(k));
   };
 
   useEffect(() => {
